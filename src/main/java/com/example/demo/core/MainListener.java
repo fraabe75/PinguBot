@@ -1,5 +1,7 @@
 package com.example.demo.core;
 
+import com.example.demo.mangos.GuildMessageReceivedMango;
+import com.example.demo.mangos.Mango;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -40,6 +42,10 @@ public class MainListener extends ListenerAdapter {
 
         String[] args = message.substring(prefix.length()).trim().split(" ", 2);
 
+        if(args[0].equals("naughty") && args[1].equals("slin")) {
+            return;
+        }
+
         if (args[0].equals("mangos")) {
             channel.sendMessage(mangos.toString()).queue();
             return;
@@ -71,6 +77,13 @@ public class MainListener extends ListenerAdapter {
     }
 
     private MessageEmbed help() {
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.setTitle("Main help page");
+        builder.setDescription(prefix + "mangos\n" + prefix + "help <mango>");
+        return builder.build();
+    }
+
+    private MessageEmbed onlyfans() {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Main help page");
         builder.setDescription(prefix + "mangos\n" + prefix + "help <mango>");
