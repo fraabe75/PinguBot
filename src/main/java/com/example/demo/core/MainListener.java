@@ -40,27 +40,51 @@ public class MainListener extends ListenerAdapter {
         if (!message.startsWith(prefix))
             return;
 
-        String[] args = message.substring(prefix.length()).trim().split(" ", 2);
+        String[] args = message.substring(prefix.length()).trim().split(" ", 3);
+
+        switch (args[0]) {
+            case "help" -> {
+                if (args.length == 2) {
+                    for (Plugin plugin : plugins) {
+                        if (plugin.getName().equals(args[1])) {
+                            channel.sendMessage(plugin.help(prefix)).queue();
+                            return;
+                        }
+                    }
+                    channel.sendMessage("Couldn't find command").queue();
+                } else {
+                    channel.sendMessage(help()).queue();
+                }
+                return;
+            }
+            case "user" -> {
+                if(args.length == 2) {
+                    channel.sendMessage(usermanagement.guildMessageReceived(event, args[1], args[2], prefix)).queue();
+                } else {
+                    channel.sendMessage(user()).queue();
+                }
+                return;
+            }
+            case "roulette" -> {
+                if(args.length == 2) {
+                    channel.sendMessage(roullette.guildMessageReceived(event, args[1], args[2], prefix)).queue();
+                } else {
+                    channel.sendMessage(user()).queue();
+                }
+                return;
+            }
+            case "blackjack" -> {
+                if(args.length == 2) {
+                    channel.sendMessage(blackjack.guildMessageReceived(event, args[1], args[2], prefix)).queue();
+                } else {
+                    channel.sendMessage(user()).queue();
+                }
+                return;
+            }
+        }
 
         if (args[0].equals("commands")) {
             channel.sendMessage(plugins.toString()).queue();
-            return;
-        }
-
-        //!help
-        //!help <command>
-        if (args[0].equals("help")) {
-            if (args.length == 2) {
-                for (Plugin plugin : plugins) {
-                    if (plugin.getName().equals(args[1])) {
-                        channel.sendMessage(plugin.help(prefix)).queue();
-                        return;
-                    }
-                }
-                channel.sendMessage("Couldn't find command").queue();
-            } else {
-                channel.sendMessage(help()).queue();
-            }
             return;
         }
 
@@ -76,6 +100,13 @@ public class MainListener extends ListenerAdapter {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Main help page");
         builder.setDescription(prefix + "commands\n" + prefix + "help <command>");
+        return builder.build();
+    }
+
+    private MessageEmbed user() {
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.setTitle("Your Account:");
+        builder.setDescription("acc data...");
         return builder.build();
     }
 
