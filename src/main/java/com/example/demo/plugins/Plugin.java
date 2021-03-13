@@ -1,4 +1,4 @@
-package com.example.demo.mangos;
+package com.example.demo.plugins;
 
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public abstract class Mango {
+public abstract class Plugin {
 
     private String name;
 
@@ -22,7 +22,7 @@ public abstract class Mango {
     private final List<String> allowedRoles;
     private final List<Permission> allowedPermissions;
 
-    public Mango() {
+    public Plugin() {
         this.commands = new ArrayList<>();
         this.allowedRoles = new ArrayList<>();
         this.allowedPermissions = new ArrayList<>();

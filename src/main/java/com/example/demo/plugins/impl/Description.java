@@ -1,17 +1,15 @@
-package com.example.demo.mangos.impl;
+package com.example.demo.plugins.impl;
 
-import com.example.demo.mangos.GuildMessageReceivedMango;
+import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.database.entities.DescriptionEntity;
 import com.example.demo.database.repositories.DescriptionRepository;
-import com.example.demo.mangos.GuildMessageReceivedMango;
-import com.example.demo.mangos.Mango;
+import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 
 @Service
-public class Description extends Mango implements GuildMessageReceivedMango {
+public class Description extends Plugin implements GuildMessageReceivedPlugin {
 
     private final DescriptionRepository descriptionRepository;
 

@@ -1,15 +1,13 @@
-package com.example.demo.mangos.impl;
+package com.example.demo.plugins.impl;
 
-import com.example.demo.mangos.GuildMessageReceivedMango;
-import com.example.demo.mangos.Mango;
-import com.example.demo.mangos.GuildMessageReceivedMango;
-import com.example.demo.mangos.Mango;
+import com.example.demo.plugins.GuildMessageReceivedPlugin;
+import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.stereotype.Service;
 
 @Service
-public class Ping extends Mango implements GuildMessageReceivedMango {
+public class Ping extends Plugin implements GuildMessageReceivedPlugin {
 
     public Ping() {
         setName("Ping");
