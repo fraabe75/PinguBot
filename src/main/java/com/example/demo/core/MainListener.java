@@ -42,11 +42,6 @@ public class MainListener extends ListenerAdapter {
 
         String[] args = message.substring(prefix.length()).trim().split(" ", 2);
 
-        if (args[0].equals("naughty") && args[1].equals("slin")) {
-            channel.sendMessage(onlyfans()).queue();
-            return;
-        }
-
         if (args[0].equals("commands")) {
             channel.sendMessage(plugins.toString()).queue();
             return;
@@ -81,15 +76,6 @@ public class MainListener extends ListenerAdapter {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Main help page");
         builder.setDescription(prefix + "commands\n" + prefix + "help <command>");
-        return builder.build();
-    }
-
-    private MessageEmbed onlyfans() {
-        EmbedBuilder builder = new EmbedBuilder();
-        builder.setTitle("Subscribe to my Onlyfans!");
-        builder.setDescription("https://onlyfans.com/schnils69");
-        builder.setThumbnail("https://cdn.pocket-lint.com/r/s/1200x/assets/images/153545-apps-news-feature-what-is" +
-                "-onlyfans-and-how-does-it-work-image2-sisy2dmz3f.JPG");
         return builder.build();
     }
 
