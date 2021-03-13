@@ -88,4 +88,7 @@ public abstract class Plugin {
         this.name = name;
     }
 
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
 }

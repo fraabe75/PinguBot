@@ -5,6 +5,7 @@ import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -42,45 +43,29 @@ public class MainListener extends ListenerAdapter {
 
         String[] args = message.substring(prefix.length()).trim().split(" ", 3);
 
-        switch (args[0]) {
-            case "help" -> {
-                if (args.length == 2) {
-                    for (Plugin plugin : plugins) {
-                        if (plugin.getName().equals(args[1])) {
-                            channel.sendMessage(plugin.help(prefix)).queue();
-                            return;
-                        }
+        for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
+            if (((Plugin) guildMessageReceivedPlugin).getPrefix().equals(args[0])) {
+                if (!notifyOnGuildMessageReceived(event, args[0], args[1]))
+                    channel.sendMessage("Couldn't find command in any plugins").queue();
+                return;
+            }
+        }
+
+        //!help
+        //!help <plugin>
+        if (args[0].equals("help")) {
+            if (args.length == 2) {
+                for (Plugin plugin : plugins) {
+                    if (plugin.getName().equals(args[1])) {
+                        channel.sendMessage(plugin.help(prefix)).queue();
+                        return;
                     }
-                    channel.sendMessage("Couldn't find command").queue();
-                } else {
-                    channel.sendMessage(help()).queue();
                 }
-                return;
+                channel.sendMessage("Couldn't find plugin!").queue();
+            } else {
+                channel.sendMessage(help()).queue();
             }
-            case "user" -> {
-                if(args.length == 2) {
-                    channel.sendMessage(usermanagement.guildMessageReceived(event, args[1], args[2], prefix)).queue();
-                } else {
-                    channel.sendMessage(user()).queue();
-                }
-                return;
-            }
-            case "roulette" -> {
-                if(args.length == 2) {
-                    channel.sendMessage(roullette.guildMessageReceived(event, args[1], args[2], prefix)).queue();
-                } else {
-                    channel.sendMessage(user()).queue();
-                }
-                return;
-            }
-            case "blackjack" -> {
-                if(args.length == 2) {
-                    channel.sendMessage(blackjack.guildMessageReceived(event, args[1], args[2], prefix)).queue();
-                } else {
-                    channel.sendMessage(user()).queue();
-                }
-                return;
-            }
+            return;
         }
 
         if (args[0].equals("commands")) {
@@ -100,13 +85,6 @@ public class MainListener extends ListenerAdapter {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Main help page");
         builder.setDescription(prefix + "commands\n" + prefix + "help <command>");
-        return builder.build();
-    }
-
-    private MessageEmbed user() {
-        EmbedBuilder builder = new EmbedBuilder();
-        builder.setTitle("Your Account:");
-        builder.setDescription("acc data...");
         return builder.build();
     }
 
