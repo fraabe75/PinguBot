@@ -6,12 +6,16 @@ import com.example.demo.database.entities.UserEntity;
 import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
+import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,17 +66,15 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             user = userRepository.getOne(userID);
         }
 
-        event.getChannel().sendMessage(
-                switch (command) {
-                    case "fish", "score", "elo", "rank", "mateability", "" -> getUserProfileEmbed(user, event);
-                    default -> help();
-                }
-        ).queue();
+        switch (command) {
+            case "fish", "score", "elo", "rank", "mateability", "" -> sendUserProfileEmbed(user, event.getChannel());
+            default -> event.getChannel().sendMessage(help()).queue();
+        }
 
         return true;
     }
 
-    private MessageEmbed getUserProfileEmbed(UserEntity user, GuildMessageReceivedEvent e) {
+    private void sendUserProfileEmbed(UserEntity user, TextChannel channel) {
         EmbedBuilder builder = new EmbedBuilder();
 
         builder.setTitle(user.getUserName() + "'s profile:");
@@ -84,10 +86,17 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                                and therefore your mateability factor.""");
 
         RankClasses.Rank userRank = getRank(user);
-        builder.addField("Rank", userRank.getDe(), true);
-        builder.setThumbnail(userRank.getImg());
+        ClassPathResource file = new ClassPathResource(userRank.getImg());
 
-        return builder.build();
+        builder.addField("Rank", userRank.getDe(), true);
+        builder.setThumbnail("attachment://" + file.getFilename());
+        try {
+            channel.sendMessage(builder.build())
+                   .addFile(file.getFile(), Objects.requireNonNull(file.getFilename()))
+                   .queue();
+        } catch (IOException e) {
+            System.err.println("Couldn't load profile picture: " + e.getMessage());
+        }
     }
 
     private RankClasses.Rank getRank(UserEntity user) {
@@ -101,6 +110,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                           .stream()
                           .filter(e -> e.getValue().getLvl() == place)
                           .findAny()
-                          .get().getValue();
+                          .get()
+                          .getValue();
     }
 }
