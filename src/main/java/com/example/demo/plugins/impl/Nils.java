@@ -11,6 +11,7 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
+import java.util.Objects;
 
 
 @Service
@@ -20,7 +21,7 @@ public class Nils extends Plugin implements GuildMessageReceivedPlugin {
         setName("Nils");
         setPrefix("naughty");
         setDescription("Slightly overused insider");
-        addCommands("slin");
+        addCommands("slin", "skipper");
     }
 
     @Override
@@ -34,7 +35,6 @@ public class Nils extends Plugin implements GuildMessageReceivedPlugin {
 
         if (command.equals("slin")) {
             channel.sendMessage(onlyfans()).queue();
-            channel.sendMessage("<@137294148397957120>").queue();
         }
 
         return true;
