@@ -26,7 +26,7 @@ public class Ping extends Plugin implements GuildMessageReceivedPlugin {
         TextChannel channel = event.getChannel();
 
         if (command.equals("")) {
-            channel.sendMessage("pong" + prefix).queue();
+            channel.sendMessage("Try something naughty...").queue();
         }
 
         return true;
