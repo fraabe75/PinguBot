@@ -27,7 +27,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private RankClasses rankClasses;
 
     public UserManager(UserRepository userRepository) {
-        setName("UserManager");
+        setName("User");
         setPrefix("user");
         setDescription("Displays userprofile stuff");
         addCommands("fish", "score", "mateability", "elo", "rank", "help", "");
@@ -113,4 +113,5 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                           .get()
                           .getValue();
     }
+
 }

@@ -18,9 +18,7 @@ import java.util.Objects;
 public class Nils extends Plugin implements GuildMessageReceivedPlugin {
 
     public Nils() {
-        setName("Nils");
         setPrefix("naughty");
-        setDescription("Slightly overused insider");
         addCommands("slin", "skipper");
     }
 

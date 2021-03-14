@@ -64,12 +64,13 @@ public class MainListener extends ListenerAdapter {
         if (args[0].equals("help")) {
             event.getChannel().sendMessage(
                     switch (args[1]) {
-                        case "users", "user", "UserManager", "usermanager" -> UserManager.help();
+                        case "users", "user", "usermanager" -> UserManager.help();
                         default -> {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
                             builder.setDescription("Not just anybody?");
                             for (Plugin plugin : plugins) {
+                                if(!plugin.getPrefix().equals("naughty"))
                                 builder.addField(
                                         new MessageEmbed.Field(plugin.getName(), plugin.getDescription(), false)
                                 );
