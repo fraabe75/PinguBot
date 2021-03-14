@@ -3,15 +3,12 @@ package com.example.demo.plugins.impl;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
-import java.util.Objects;
 
 
 @Service
@@ -19,7 +16,7 @@ public class Nils extends Plugin implements GuildMessageReceivedPlugin {
 
     public Nils() {
         setPrefix("naughty");
-        addCommands("slin", "skipper");
+        addCommands("slin");
     }
 
     @Override
