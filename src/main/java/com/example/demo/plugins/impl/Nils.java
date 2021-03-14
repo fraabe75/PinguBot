@@ -34,6 +34,7 @@ public class Nils extends Plugin implements GuildMessageReceivedPlugin {
 
     private MessageEmbed onlyfans() {
         EmbedBuilder builder = new EmbedBuilder();
+        builder.setAuthor("137294148397957120");
         builder.setTitle("Subscribe to my Onlyfans!");
         builder.setDescription("https://onlyfans.com/schnils69");
         builder.setThumbnail("https://cdn.pocket-lint.com/r/s/1200x/assets/images/153545-apps-news-feature-what-is" +
