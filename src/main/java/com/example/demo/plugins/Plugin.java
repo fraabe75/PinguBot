@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 public abstract class Plugin {
 
     private String name;
+    private String prefix;
 
     private final List<String> commands;
     private final List<String> allowedRoles;
@@ -74,6 +75,10 @@ public abstract class Plugin {
         return name;
     }
 
+    public String getPrefix() {
+        return prefix;
+    }
+
     @Override
     public String toString() {
         return name;
@@ -83,4 +88,7 @@ public abstract class Plugin {
         this.name = name;
     }
 
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
+    }
 }

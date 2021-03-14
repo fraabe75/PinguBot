@@ -5,6 +5,7 @@ import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.Event;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -40,20 +41,18 @@ public class MainListener extends ListenerAdapter {
         if (!message.startsWith(prefix))
             return;
 
-        String[] args = message.substring(prefix.length()).trim().split(" ", 2);
+        String[] args = message.substring(prefix.length()).trim().split(" ", 3);
 
-        if (args[0].equals("naughty") && args[1].equals("slin")) {
-            channel.sendMessage(onlyfans()).queue();
-            return;
-        }
-
-        if (args[0].equals("commands")) {
-            channel.sendMessage(plugins.toString()).queue();
-            return;
+        for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
+            if (((Plugin) guildMessageReceivedPlugin).getPrefix().equals(args[0])) {
+                if (!notifyOnGuildMessageReceived(event, args[0], args[1]))
+                    channel.sendMessage("Couldn't find command in any plugins").queue();
+                return;
+            }
         }
 
         //!help
-        //!help <command>
+        //!help <plugin>
         if (args[0].equals("help")) {
             if (args.length == 2) {
                 for (Plugin plugin : plugins) {
@@ -62,10 +61,15 @@ public class MainListener extends ListenerAdapter {
                         return;
                     }
                 }
-                channel.sendMessage("Couldn't find command").queue();
+                channel.sendMessage("Couldn't find plugin!").queue();
             } else {
                 channel.sendMessage(help()).queue();
             }
+            return;
+        }
+
+        if (args[0].equals("commands")) {
+            channel.sendMessage(plugins.toString()).queue();
             return;
         }
 
@@ -81,15 +85,6 @@ public class MainListener extends ListenerAdapter {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Main help page");
         builder.setDescription(prefix + "commands\n" + prefix + "help <command>");
-        return builder.build();
-    }
-
-    private MessageEmbed onlyfans() {
-        EmbedBuilder builder = new EmbedBuilder();
-        builder.setTitle("Subscribe to my Onlyfans!");
-        builder.setDescription("https://onlyfans.com/schnils69");
-        builder.setThumbnail("https://cdn.pocket-lint.com/r/s/1200x/assets/images/153545-apps-news-feature-what-is" +
-                "-onlyfans-and-how-does-it-work-image2-sisy2dmz3f.JPG");
         return builder.build();
     }
 
