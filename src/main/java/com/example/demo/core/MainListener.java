@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,16 @@ public class MainListener extends ListenerAdapter {
     public MainListener(List<Plugin> plugins, List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins) {
         this.plugins = plugins;
         this.guildMessageReceivedPlugins = guildMessageReceivedPlugins;
+    }
+
+    @Override
+    public void onGuildMessageUpdate(@NotNull GuildMessageUpdateEvent event) {
+        GuildMessageReceivedEvent emuEvent = new GuildMessageReceivedEvent(
+                event.getJDA(),
+                event.getResponseNumber(),
+                event.getMessage()
+        );
+        onGuildMessageReceived(emuEvent);
     }
 
     @Override

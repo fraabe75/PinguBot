@@ -26,7 +26,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         setName("UserManager");
         setPrefix("user");
         setDescription("Displays userprofile stuff");
-        addCommands("fish", "score", "mateability", "elo", "rank", "help");
+        addCommands("fish", "score", "mateability", "elo", "rank", "help", "");
 
         this.userRepository = userRepository;
     }
@@ -64,7 +64,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
         event.getChannel().sendMessage(
                 switch (command) {
-                    case "fish", "score", "elo", "rank", "mateability", "" -> getUserProfileEmbed(user);
+                    case "fish", "score", "elo", "rank", "mateability", "" -> getUserProfileEmbed(user, event);
                     default -> help();
                 }
         ).queue();
@@ -72,7 +72,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         return true;
     }
 
-    private MessageEmbed getUserProfileEmbed(UserEntity user) {
+    private MessageEmbed getUserProfileEmbed(UserEntity user, GuildMessageReceivedEvent e) {
         EmbedBuilder builder = new EmbedBuilder();
 
         builder.setTitle(user.getUserName() + "'s profile:");
@@ -85,7 +85,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
         RankClasses.Rank userRank = getRank(user);
         builder.addField("Rank", userRank.getDe(), true);
-        //builder.setThumbnail(userRank.getImg());
+        builder.setThumbnail(userRank.getImg());
 
         return builder.build();
     }
