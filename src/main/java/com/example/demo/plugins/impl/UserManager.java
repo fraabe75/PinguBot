@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
@@ -19,11 +20,28 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
     public UserManager(UserRepository userRepository) {
         setName("UserManager");
-        addCommands("fish", "score", "mateability", "elo", "rank");
+        setPrefix("user");
+        setDescription("Displays userprofile stuff");
+        addCommands("fish", "score", "mateability", "elo", "rank", "help");
 
         this.userRepository = userRepository;
     }
 
+    public static MessageEmbed help() {
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.setTitle("User Help");
+        builder.setDescription("UserManager here, how may I help you?");
+        builder.addField(
+                new MessageEmbed.Field(
+                        "'user' + ['fish', 'score', 'mateability', 'elo', 'rank']:",
+                        "display your current stats",
+                        false
+                )
+        );
+        return builder.build();
+    }
+
+    // TODO: implement global rank
     @Override
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
         if (!commands().contains(command)) {
@@ -42,11 +60,12 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             user = userRepository.getOne(userID);
         }
 
-        switch (command) {
-            case "fish", "score", "elo", "rank", "mateability", "" -> event.getChannel()
-                                                                           .sendMessage(getUserProfileEmbed(user))
-                                                                           .queue();
-        }
+        event.getChannel().sendMessage(
+                switch (command) {
+                    case "fish", "score", "elo", "rank", "mateability", "" -> getUserProfileEmbed(user);
+                    default -> help();
+                }
+        ).queue();
 
         return true;
     }
@@ -57,15 +76,23 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setTitle(user.getUserName() + "'s profile:");
         builder.addField(new MessageEmbed.Field("Fish", ((Long) user.getFish()).toString(), true));
         builder.addField(new MessageEmbed.Field("Mateability", ((Long) user.getMateability()).toString(), true));
-        builder.setDescription("Collect and bet your fish.\nWins improve your popularity \n" +
-                               "and therefore your mateability factor.");
+        builder.addField(new MessageEmbed.Field("Rank", getRank(user), true));
+        builder.setDescription("""
+                               Collect and bet your fish.
+                               Wins improve your popularity\s
+                               and therefore your mateability factor.""");
         return builder.build();
     }
 
     private String getRank(UserEntity user) {
-        List<UserEntity> users = userRepository.findAll(Sort.by(Sort.Direction.ASC, "mateability"));
-        int place = (int) (users.indexOf(user) / (double) users.size() * 10) + 1;
-        return switch(place) {
+        List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.ASC, "mateability"))
+                                           .stream().map(UserEntity::getUserId).collect(Collectors.toList());
+        int place = (int) (userIDs.indexOf(user.getUserId()) / ((double) userIDs.size() - 1) * 10) + 1;
+        System.out.println(place);
+        System.out.println(userIDs);
+        System.out.println(user.getUserId());
+        // TODO: add penguin profile pictures
+        return switch (place) {
             case 9 -> "Königspinguin";
             case 8 -> "Eselspinguin";
             case 7 -> "Goldschopfpinguin";
@@ -74,8 +101,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             case 4 -> "Magellan-Pinguin";
             case 3 -> "Humbold-Pinguin";
             case 2 -> "Felsenpinguin";
-            case 1 -> "Galapagospinguin";
-            default -> "Kaiserpinguin";
+            case 10, 11 -> "Kaiserpinguin";
+            default -> "Galapagospinguin";
         };
     }
 }

@@ -11,19 +11,23 @@ public class Ping extends Plugin implements GuildMessageReceivedPlugin {
 
     public Ping() {
         setName("Ping");
-
-        addCommands("ping");
+        setPrefix("ping");
+        setDescription("My ping is 1.7ms, what about yours?");
+        addCommands("");
     }
 
     @Override
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
-        if (!commands().contains(command))
+        if (!commands().contains(command)) {
             return false;
+        }
 
         TextChannel channel = event.getChannel();
 
-        if (command.equals("ping")) channel.sendMessage("pong" + prefix).queue();
+        if (command.equals("")) {
+            channel.sendMessage("pong" + prefix).queue();
+        }
 
         return true;
     }

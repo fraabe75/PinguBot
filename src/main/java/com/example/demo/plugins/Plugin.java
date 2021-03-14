@@ -5,6 +5,7 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.Role;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public abstract class Plugin {
 
     private String name;
     private String prefix;
+    private String description;
 
     private final List<String> commands;
     private final List<String> allowedRoles;
@@ -27,6 +29,7 @@ public abstract class Plugin {
         this.commands = new ArrayList<>();
         this.allowedRoles = new ArrayList<>();
         this.allowedPermissions = new ArrayList<>();
+        this.description = "";
     }
 
     public List<String> commands() {
@@ -50,7 +53,8 @@ public abstract class Plugin {
         boolean allowed = true;
 
         if (!allowedRoles.isEmpty()) {
-            allowed = !Collections.disjoint(member.getRoles().stream().map(Role::getName).collect(Collectors.toList()), allowedRoles);
+            allowed = !Collections
+                    .disjoint(member.getRoles().stream().map(Role::getName).collect(Collectors.toList()), allowedRoles);
         }
 
         if (!allowedPermissions.isEmpty()) {
@@ -58,17 +62,6 @@ public abstract class Plugin {
         }
 
         return !allowed;
-    }
-
-    public MessageEmbed help(String prefix) {
-        EmbedBuilder builder = new EmbedBuilder();
-        builder.setTitle("Helper page for " + name);
-        StringBuilder sb = new StringBuilder();
-        for (String command : commands) {
-            sb.append(prefix).append(command).append("\n");
-        }
-        builder.setDescription(sb.toString());
-        return builder.build();
     }
 
     public String getName() {
@@ -84,11 +77,19 @@ public abstract class Plugin {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotNull String name) {
         this.name = name;
     }
 
-    public void setPrefix(String prefix) {
+    public void setPrefix(@NotNull String prefix) {
         this.prefix = prefix;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(@NotNull String description) {
+        this.description = description;
     }
 }

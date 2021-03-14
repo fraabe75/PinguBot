@@ -11,19 +11,21 @@ public class Nils extends Plugin implements GuildMessageReceivedPlugin {
 
     public Nils() {
         setName("Nils");
-
-        addCommands("naughty slin");
+        setPrefix("naughty");
+        setDescription("Slightly overused insider");
+        addCommands("slin");
     }
 
     @Override
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
-        if (!commands().contains(command))
+        if (!commands().contains(command)) {
             return false;
+        }
 
         TextChannel channel = event.getChannel();
 
-        if (command.equals("naughty slin")) {
+        if (command.equals("slin")) {
             channel.sendMessage(onlyfans()).queue();
         }
 
@@ -35,7 +37,7 @@ public class Nils extends Plugin implements GuildMessageReceivedPlugin {
         builder.setTitle("Subscribe to my Onlyfans!");
         builder.setDescription("https://onlyfans.com/schnils69");
         builder.setThumbnail("https://cdn.pocket-lint.com/r/s/1200x/assets/images/153545-apps-news-feature-what-is" +
-                "-onlyfans-and-how-does-it-work-image2-sisy2dmz3f.JPG");
+                             "-onlyfans-and-how-does-it-work-image2-sisy2dmz3f.JPG");
         return builder.build();
     }
 
