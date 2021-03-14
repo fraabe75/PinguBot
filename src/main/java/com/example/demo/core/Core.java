@@ -23,8 +23,8 @@ public class Core {
         );
 
         return JDABuilder.create(token, intents)
-                .addEventListeners(mainListener)
-                .build();
+                         .addEventListeners(mainListener)
+                         .build();
     }
 
 }

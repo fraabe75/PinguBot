@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
-
+    // TODO: dp! user @Name
+    // TODO: shortcuts
     private final UserRepository userRepository;
 
     @Autowired
@@ -30,7 +31,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         setName("User");
         setPrefix("user");
         setDescription("Displays userprofile stuff");
-        addCommands("fish", "score", "mateability", "elo", "rank", "help", "");
+        addCommands("fish", "score", "mateability", "elo", "rank", "help", "", "global", "rank", "statistic", "players");
 
         this.userRepository = userRepository;
     }
@@ -40,14 +41,18 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setTitle("User Help");
         builder.setDescription("UserManager here, how may I help you?");
         builder.addField(
-                "'user' + ['fish', 'score', 'mateability', 'elo', 'rank']:",
-                "display your current stats",
+                "'user score [<username> | self]:",
+                "display current stats",
+                false
+        );
+        builder.addField(
+                "'user global:",
+                "display the global ranking",
                 false
         );
         return builder.build();
     }
 
-    // TODO: implement global rank
     @Override
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
         if (!commands().contains(command)) {
@@ -67,11 +72,80 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         switch (command) {
-            case "fish", "score", "elo", "rank", "mateability", "" -> sendUserProfileEmbed(user, event.getChannel());
+            case "fish", "score", "elo", "mateability", "" -> {
+                generateUserProfile(event.getChannel(), param, user);
+            }
+            case "global", "rank", "statistic", "players" -> event.getChannel().sendMessage(globalRank(user)).queue();
             default -> event.getChannel().sendMessage(help()).queue();
         }
 
         return true;
+    }
+
+    private void generateUserProfile(TextChannel channel, String param, UserEntity user) {
+        if (param.isBlank() || param.equalsIgnoreCase("self")) {
+            sendUserProfileEmbed(user, channel);
+        } else {
+            param = param.replace("@", "");
+            UserEntity foundMember;
+
+            if (param.matches("^<!\\d+>$")) {
+                foundMember = userRepository.getOne(Long.parseLong(param.substring(2, param.length() - 1)));
+            } else {
+                String proposedName = param.substring(0, param.contains("#") ? param.indexOf("#") : param.length());
+                foundMember = userRepository.findAll()
+                                            .stream()
+                                            .filter(u -> u.getUserName().equalsIgnoreCase(proposedName))
+                                            .findAny()
+                                            .orElse(null);
+            }
+
+            if (foundMember == null) {
+                channel.sendMessage(
+                        "Sorry, but our penguins weren't able to find any colony member identified by \""
+                        + param
+                        + "\"."
+                ).queue();
+            } else {
+                sendUserProfileEmbed(foundMember, channel);
+            }
+        }
+    }
+
+    private MessageEmbed globalRank(UserEntity user) {
+        EmbedBuilder builder = new EmbedBuilder();
+
+        builder.setTitle("Highscores:");
+        List<UserEntity> userList = userRepository.findAll(Sort.by(Sort.Direction.DESC, "mateability"));
+        List<Long> userIdList = userList.stream().map(UserEntity::getUserId).collect(Collectors.toList());
+
+        StringBuilder topTen = new StringBuilder();
+        for (int i = 0; i < userList.size() && i < 10; i++) {
+            topTen.append(i);
+            topTen.append(". ");
+            topTen.append(userList.get(i).getUserName());
+            topTen.append(" - ");
+            topTen.append(userList.get(i).getMateability());
+            topTen.append("\n");
+        }
+        builder.addField("Global Top Ten:", topTen.toString(), false);
+
+        if (!userIdList.subList(0, userList.size() <= 9 ? userList.size() - 1 : 9).contains(user.getUserId())) {
+            StringBuilder positions = new StringBuilder("...\n");
+            int startIndex = userIdList.indexOf(user.getUserId());
+            for (int i = startIndex - 2; i < userList.size() && i <= startIndex + 2; i++) {
+                positions.append(i);
+                positions.append(". ");
+                if (i == startIndex) positions.append("*");
+                positions.append(userList.get(i).getUserName());
+                if (i == startIndex) positions.append("*");
+                positions.append("\n");
+            }
+            positions.append("...");
+            builder.addField("Your are currently on position " + startIndex + ":", positions.toString(), false);
+        }
+
+        return builder.build();
     }
 
     private void sendUserProfileEmbed(UserEntity user, TextChannel channel) {
@@ -88,7 +162,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         RankClasses.Rank userRank = getRank(user);
         ClassPathResource file = new ClassPathResource(userRank.getImg());
 
-        builder.addField("Rank", userRank.getDe(), true);
+        builder.addField("Rank", userRank.getEn(), true);
         builder.setThumbnail("attachment://" + file.getFilename());
         try {
             channel.sendMessage(builder.build())
@@ -100,7 +174,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     }
 
     private RankClasses.Rank getRank(UserEntity user) {
-        List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.ASC, "mateability"))
+        List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.DESC, "mateability"))
                                            .stream().map(UserEntity::getUserId).collect(Collectors.toList());
         int numPlayers = userIDs.size() == 0 ? 1 : userIDs.size();
         int place = (int) ((userIDs.indexOf(user.getUserId()) + 1.0) / numPlayers * 10) - 1;

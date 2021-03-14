@@ -75,6 +75,7 @@ public class MainListener extends ListenerAdapter {
                                         new MessageEmbed.Field(plugin.getName(), plugin.getDescription(), false)
                                 );
                             }
+                            builder.setFooter("For detailed help messages:\n" + prefix + " help <command>");
                             yield builder.build();
                         }
                     }
