@@ -14,6 +14,8 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin {
     private UserRepository userRepository;
 
     public Fish(UserRepository userRepository) {
+        setName("Fish");
+        setDescription("Go fishing!");
         setPrefix("fish");
         this.userRepository = userRepository;
     }
