@@ -1,5 +1,6 @@
 package com.example.demo.core;
 
+import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
 import com.example.demo.plugins.impl.UserManager;
@@ -8,6 +9,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageUpdateEvent;
+import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +25,19 @@ public class MainListener extends ListenerAdapter {
 
     private final List<Plugin> plugins;
     private final List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins;
+    private final List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins;
 
-    public MainListener(List<Plugin> plugins, List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins) {
+    public MainListener(List<Plugin> plugins, List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins, List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins) {
         this.plugins = plugins;
         this.guildMessageReceivedPlugins = guildMessageReceivedPlugins;
+        this.guildMessageReactionAddPlugins = guildMessageReactionAddPlugins;
+    }
+
+    @Override
+    public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent event) {
+        for (GuildMessageReactionAddPlugin guildMessageReactionAddPlugin : guildMessageReactionAddPlugins) {
+            guildMessageReactionAddPlugin.guildMessageReactionAdd(event, event.getMessageId());
+        }
     }
 
     @Override
