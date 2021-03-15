@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
-    // TODO: dp! user @Name
-    // TODO: shortcuts
     private final UserRepository userRepository;
 
     @Autowired
@@ -29,10 +27,17 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
     public UserManager(UserRepository userRepository) {
         setName("User");
-        setPrefix("user");
         setDescription("Displays userprofile stuff");
-        addCommands("fish", "score", "mateability", "elo", "rank", "help", "", "global", "rank", "statistic", "players");
-
+        addCommands(
+                "score",
+                "mateability",
+                "elo",
+                "rank",
+                "ranks",
+                "user",
+                "global",
+                "statistic"
+        );
         this.userRepository = userRepository;
     }
 
@@ -41,12 +46,12 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setTitle("User Help");
         builder.setDescription("UserManager here, how may I help you?");
         builder.addField(
-                "'user score [<username> | self]:",
+                "user [<username> | self]:",
                 "display current stats",
                 false
         );
         builder.addField(
-                "'user global:",
+                "(statistic | global | rank):",
                 "display the global ranking",
                 false
         );
@@ -72,10 +77,10 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         switch (command) {
-            case "fish", "score", "elo", "mateability", "" -> {
+            case "score", "elo", "mateability", "user" -> {
                 generateUserProfile(event.getChannel(), param, user);
             }
-            case "global", "rank", "statistic", "players" -> event.getChannel().sendMessage(globalRank(user)).queue();
+            case "global", "rank", "ranks", "statistic" -> event.getChannel().sendMessage(globalRank(user)).queue();
             default -> event.getChannel().sendMessage(help()).queue();
         }
 
@@ -87,10 +92,13 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             sendUserProfileEmbed(user, channel);
         } else {
             param = param.replace("@", "");
-            UserEntity foundMember;
+            UserEntity foundMember = null;
 
             if (param.matches("^<!\\d+>$")) {
-                foundMember = userRepository.getOne(Long.parseLong(param.substring(2, param.length() - 1)));
+                long userID = Long.parseLong(param.substring(2, param.length() - 1));
+                if (userRepository.existsById(userID)) {
+                    foundMember = userRepository.getOne(userID);
+                }
             } else {
                 String proposedName = param.substring(0, param.contains("#") ? param.indexOf("#") : param.length());
                 foundMember = userRepository.findAll()
@@ -152,12 +160,11 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         EmbedBuilder builder = new EmbedBuilder();
 
         builder.setTitle(user.getUserName() + "'s profile:");
-        builder.addField("Fish", ((Long) user.getFish()).toString(), true);
-        builder.addField("Mateability", ((Long) user.getMateability()).toString(), true);
+        builder.addField("Fish", ((Long) user.getFish()).toString() + " :fish:", true);
+        builder.addField("Mateability", ((Long) user.getMateability()).toString() + " :penguin:", true);
         builder.setDescription("""
-                               Collect and bet your fish.
-                               Wins improve your popularity\s
-                               and therefore your mateability factor.""");
+                               Collect fish and improve your\s
+                               mateability by winning in games.""");
 
         RankClasses.Rank userRank = getRank(user);
         ClassPathResource file = new ClassPathResource(userRank.getImg());
@@ -174,7 +181,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     }
 
     private RankClasses.Rank getRank(UserEntity user) {
-        List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.DESC, "mateability"))
+        List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.ASC, "mateability"))
                                            .stream().map(UserEntity::getUserId).collect(Collectors.toList());
         int numPlayers = userIDs.size() == 0 ? 1 : userIDs.size();
         int place = (int) ((userIDs.indexOf(user.getUserId()) + 1.0) / numPlayers * 10) - 1;
@@ -187,5 +194,4 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                           .get()
                           .getValue();
     }
-
 }

@@ -12,9 +12,8 @@ public class Ping extends Plugin implements GuildMessageReceivedPlugin {
 
     public Ping() {
         setName("Ping");
-        setPrefix("ping");
-        setDescription("My ping is 1.7ms, what about yours?");
-        addCommands("");
+        setDescription("My ping is 0.0ms, what about yours?");
+        addCommands("ping");
     }
 
     @Override

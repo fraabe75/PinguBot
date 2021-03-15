@@ -15,8 +15,7 @@ import java.awt.*;
 public class Nils extends Plugin implements GuildMessageReceivedPlugin {
 
     public Nils() {
-        setPrefix("naughty");
-        addCommands("slin");
+        addCommands("naughty");
     }
 
     @Override
@@ -28,7 +27,7 @@ public class Nils extends Plugin implements GuildMessageReceivedPlugin {
 
         TextChannel channel = event.getChannel();
 
-        if (command.equals("slin")) {
+        if (param.equals("slin")) {
             channel.sendMessage(onlyfans()).queue();
         }
 

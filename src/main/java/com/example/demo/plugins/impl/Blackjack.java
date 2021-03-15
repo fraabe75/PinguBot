@@ -27,9 +27,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
 
     public Blackjack() {
         setName("Blackjack");
-        setPrefix("blackjack");
         setDescription("Play a fun game of Blackjack!");
-        addCommands("play");
+        addCommands("bj", "blackjack");
     }
 
     @Override
@@ -42,7 +41,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         TextChannel channel = event.getChannel();
         player = event.getAuthor();
 
-        if (command.equals("play")) {
+        if (param.equals("play")) {
 
             List<String> cards = Arrays.asList("2clubs", "2spades", "2hearts", "2diamonds",
                     "3clubs", "3spades", "3hearts", "3diamonds", "4clubs", "4spades", "4hearts", "4diamonds",

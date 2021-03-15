@@ -27,7 +27,8 @@ public class MainListener extends ListenerAdapter {
     private final List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins;
     private final List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins;
 
-    public MainListener(List<Plugin> plugins, List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins, List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins) {
+    public MainListener(List<Plugin> plugins, List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins,
+                        List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins) {
         this.plugins = plugins;
         this.guildMessageReceivedPlugins = guildMessageReceivedPlugins;
         this.guildMessageReactionAddPlugins = guildMessageReactionAddPlugins;
@@ -38,16 +39,6 @@ public class MainListener extends ListenerAdapter {
         for (GuildMessageReactionAddPlugin guildMessageReactionAddPlugin : guildMessageReactionAddPlugins) {
             guildMessageReactionAddPlugin.guildMessageReactionAdd(event, event.getMessageId());
         }
-    }
-
-    @Override
-    public void onGuildMessageUpdate(@NotNull GuildMessageUpdateEvent event) {
-        GuildMessageReceivedEvent emuEvent = new GuildMessageReceivedEvent(
-                event.getJDA(),
-                event.getResponseNumber(),
-                event.getMessage()
-        );
-        onGuildMessageReceived(emuEvent);
     }
 
     @Override
@@ -65,11 +56,10 @@ public class MainListener extends ListenerAdapter {
             return;
         }
 
-        String[] args = message.substring(prefix.length()).trim().split(" ", 3);
+        String[] args = message.substring(prefix.length()).trim().split(" ", 2);
         args = new String[]{
                 args[0],
-                args.length < 2 ? "" : args[1],
-                args.length < 3 ? "" : args[2]
+                args.length < 2 ? "" : args[1]
         };
 
         if (args[0].equals("help")) {
@@ -81,7 +71,7 @@ public class MainListener extends ListenerAdapter {
                             builder.setTitle("Help! You need somebody?");
                             builder.setDescription("Not just anybody?");
                             for (Plugin plugin : plugins) {
-                                if(!plugin.getPrefix().equals("naughty"))
+                                if(!plugin.commands().contains("naughty"))
                                 builder.addField(
                                         new MessageEmbed.Field(plugin.getName(), plugin.getDescription(), false)
                                 );
@@ -95,8 +85,8 @@ public class MainListener extends ListenerAdapter {
         }
 
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
-            if (((Plugin) guildMessageReceivedPlugin).getPrefix().equals(args[0])) {
-                if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[1], args[2], prefix)) {
+            if (((Plugin) guildMessageReceivedPlugin).commands().contains(args[0])) {
+                if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[0], args[1], prefix)) {
                     channel.sendMessage("Couldn't find command").queue();
                 }
                 return;
