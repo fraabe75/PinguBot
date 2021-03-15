@@ -41,35 +41,31 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         TextChannel channel = event.getChannel();
         player = event.getAuthor();
 
-        if (param.equals("play")) {
+        List<String> cards = Arrays.asList("2clubs", "2spades", "2hearts", "2diamonds",
+                "3clubs", "3spades", "3hearts", "3diamonds", "4clubs", "4spades", "4hearts", "4diamonds",
+                "5clubs", "5spades", "5hearts", "5diamonds", "6clubs", "6spades", "6hearts", "6diamonds",
+                "7clubs", "7spades", "7hearts", "7diamonds", "8clubs", "8spades", "8hearts", "8diamonds",
+                "9clubs", "9spades", "9hearts", "9diamonds", "10clubs", "10spades", "10hearts", "10diamonds",
+                "jackclubs", "jackspades", "jackhearts", "jackdiamonds",
+                "queenclubs", "queenspades", "queenhearts", "queendiamonds",
+                "kingclubs", "kingspades", "kinghearts", "kingdiamonds",
+                "aceclubs", "acespades", "acehearts", "acediamonds");
 
-            List<String> cards = Arrays.asList("2clubs", "2spades", "2hearts", "2diamonds",
-                    "3clubs", "3spades", "3hearts", "3diamonds", "4clubs", "4spades", "4hearts", "4diamonds",
-                    "5clubs", "5spades", "5hearts", "5diamonds", "6clubs", "6spades", "6hearts", "6diamonds",
-                    "7clubs", "7spades", "7hearts", "7diamonds", "8clubs", "8spades", "8hearts", "8diamonds",
-                    "9clubs", "9spades", "9hearts", "9diamonds", "10clubs", "10spades", "10hearts", "10diamonds",
-                    "jackclubs", "jackspades", "jackhearts", "jackdiamonds",
-                    "queenclubs", "queenspades", "queenhearts", "queendiamonds",
-                    "kingclubs", "kingspades", "kinghearts", "kingdiamonds",
-                    "aceclubs", "acespades", "acehearts", "acediamonds");
+        kartenstapel.addAll(cards);
+        Collections.shuffle(kartenstapel);
 
-            kartenstapel.addAll(cards);
-            Collections.shuffle(kartenstapel);
+        dealerCards[0] = kartenstapel.pop();
+        playerCards[0] = kartenstapel.pop();
+        dealerCards[1] = kartenstapel.pop();
+        playerCards[1] = kartenstapel.pop();
 
-            dealerCards[0] = kartenstapel.pop();
-            playerCards[0] = kartenstapel.pop();
-            dealerCards[1] = kartenstapel.pop();
-            playerCards[1] = kartenstapel.pop();
+        channel.sendMessage(sendGame()).queue(message -> {
+            message.addReaction("\u261D").queue();
+            message.addReaction("\u270B").queue();
+            myMessageId = message.getId();
+        });
 
-            channel.sendMessage(sendGame()).queue(message -> {
-                message.addReaction("\u261D").queue();
-                message.addReaction("\u270B").queue();
-                myMessageId = message.getId();
-            });
-
-            System.out.println(dealerCards[0]);
-
-        }
+        System.out.println(dealerCards[0]);
 
         return true;
     }
@@ -84,7 +80,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         TextChannel channel = event.getChannel();
 
         if (event.getReactionEmote().getEmoji().equals("\u261D")) {
-            channel.editMessageById(myMessageId, sendGame()).queue(message -> message.removeReaction("\u261D", player).queue());
+            channel.editMessageById(myMessageId, sendGame())
+                   .queue(message -> message.removeReaction("\u261D", player).queue());
         }
 
         if (event.getReactionEmote().getEmoji().equals("\u270B")) {

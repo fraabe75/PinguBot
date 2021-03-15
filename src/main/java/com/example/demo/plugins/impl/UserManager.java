@@ -164,7 +164,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.addField("Mateability", ((Long) user.getMateability()).toString() + " :penguin:", true);
         builder.setDescription("""
                                Collect fish and improve your\s
-                               mateability by winning in games.""");
+                               mateability by winning games.""");
 
         RankClasses.Rank userRank = getRank(user);
         ClassPathResource file = new ClassPathResource(userRank.getImg());
