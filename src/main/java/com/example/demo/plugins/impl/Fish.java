@@ -29,7 +29,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin {
         UserEntity user = userRepository.findById(Long.parseLong(id)).get();
         user.addFish(numberOfFish);
         userRepository.saveAndFlush(user);
-        channel.sendMessage(numberOfFish + " Fish added to your repository!").queue();
+        channel.sendMessage(numberOfFish + " fish added to your repository!").queue();
 
         return true;
     }
