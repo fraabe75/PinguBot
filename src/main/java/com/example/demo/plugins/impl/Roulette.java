@@ -113,6 +113,8 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                                 builder.addField(field);
                             }
                             channel.sendMessage(builder.build()).queue(m -> lastErrorMessageID = m.getIdLong());
+                        } else {
+                            printOrUpdateBoard(board, channel);
                         }
                     }
                 }
@@ -218,8 +220,17 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
             Map<Long, List<RouletteField>> userBets = new HashMap<>();
 
             for (RouletteField field : fields) {
-                Map<Long, Long> userBetMapping = field.getCurrentBets();
-                userBetMapping.forEach((uID, bet) -> userBets.get(uID).add(field));
+                field.getCurrentBets().forEach(
+                        (uID, bet) -> {
+                            if (userBets.containsKey(uID)) {
+                                userBets.get(uID).add(field);
+                            } else {
+                                List<RouletteField> newList = new ArrayList<>();
+                                newList.add(field);
+                                userBets.put(uID, newList);
+                            }
+                        }
+                );
             }
 
             userBets.forEach((uID, rltFields) -> betBuilder.append(players.get(uID).getUserName())
