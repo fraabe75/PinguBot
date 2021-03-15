@@ -183,9 +183,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private RankClasses.Rank getRank(UserEntity user) {
         List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.ASC, "mateability"))
                                            .stream().map(UserEntity::getUserId).collect(Collectors.toList());
-        int numPlayers = userIDs.size() == 0 ? 1 : userIDs.size();
-        int place = (int) ((userIDs.indexOf(user.getUserId()) + 1.0) / numPlayers * 10) - 1;
-
+        int place = userIDs.indexOf(user.getUserId()) * 9 / (userIDs.size() - 1);
         return rankClasses.getRankClasses()
                           .entrySet()
                           .stream()
