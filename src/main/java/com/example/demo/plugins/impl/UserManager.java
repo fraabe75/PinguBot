@@ -28,16 +28,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     public UserManager(UserRepository userRepository) {
         setName("User");
         setDescription("Displays userprofile stuff");
-        addCommands(
-                "score",
-                "mateability",
-                "elo",
-                "rank",
-                "ranks",
-                "user",
-                "global",
-                "statistic"
-        );
+        addCommands("score", "mateability", "elo", "rank", "ranks", "user", "global", "stats");
         this.userRepository = userRepository;
     }
 
@@ -46,12 +37,12 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setTitle("User Help");
         builder.setDescription("UserManager here, how may I help you?");
         builder.addField(
-                "user [<username> | self]:",
+                "user <@username>",
                 "display current stats",
                 false
         );
         builder.addField(
-                "(statistic | global | rank):",
+                "global",
                 "display the global ranking",
                 false
         );
@@ -77,9 +68,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         switch (command) {
-            case "score", "elo", "mateability", "user" -> {
-                generateUserProfile(event.getChannel(), param, user);
-            }
+            case "score", "elo", "mateability", "user" -> generateUserProfile(event.getChannel(), param, user);
             case "global", "rank", "ranks", "statistic" -> event.getChannel().sendMessage(globalRank(user)).queue();
             default -> event.getChannel().sendMessage(help()).queue();
         }

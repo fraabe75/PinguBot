@@ -4,7 +4,6 @@ import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -28,14 +27,11 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
     public static MessageEmbed help() {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Blackjack Help");
-        builder.setDescription("They see me rollin'");
-        builder.addField(
-                "How to play:",
-                """
-                        Lorem Ipsum
-                        """,
-                false
-        );
+        builder.setDescription("Las Vegas is the only place I know\nwhere money really talks. It says goodbye.\n~ Frank Sinatra");
+        builder.addField("blackjack play", "start a new game", false);
+        builder.addField("blackjack place <value>", "place your bet", false);
+        builder.addField("blackjack end", "end the current game", false);
+        builder.setFooter("Shortcuts: 'bj', 'b'");
         return builder.build();
     }
 
@@ -49,29 +45,38 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         TextChannel channel = event.getChannel();
         User user = event.getAuthor();
 
-        if (param.equals("play")) {
-            if (!games.containsKey(user)) {
-                Game game = new Game();
-                games.put(event.getAuthor(), game);
-                channel.sendMessage(game.hit(false)).queue(message -> {
-                    message.addReaction("\u261D").queue();
-                    message.addReaction("\u270B").queue();
-                    game.messageId = message.getId();
-                });
-                game.player = user;
-                System.out.println(game.dealerCards.get(0));
-            } else {
-                channel.sendMessage("You are already playing!").queue();
+        switch (param.trim().split(" ")[0]) {
+            case "start", "play", "new", "game" -> {
+                if (!games.containsKey(user)) {
+                    Game game = new Game();
+                    games.put(event.getAuthor(), game);
+                    channel.sendMessage(game.hit(false)).queue(message -> {
+                        message.addReaction("\u261D").queue();
+                        message.addReaction("\u270B").queue();
+                        game.messageId = message.getId();
+                    });
+                    game.player = user;
+                    System.out.println(game.dealerCards.get(0));
+                } else {
+                    channel.sendMessage("You are already playing!").queue();
+                }
             }
-            return true;
-        }
+            case "place", "bet", "set"  -> {
+                try {
+                    games.get(user).bet = Integer.parseInt(param.trim().split(" ")[1]);
+                } catch (Exception e) {
+                    channel.sendMessage("Invalid value!").queue();
+                }
 
-        if (param.equals("bet")) {
-            channel.sendMessage("Einsatz hier").queue();
-            return true;
-        }
 
-        return false;
+
+            }
+            case "end", "terminate" -> {
+                channel.sendMessage("Terminated your current game.").queue();
+            }
+            default -> channel.sendMessage(help()).queue();
+        }
+        return true;
     }
 
     @Override
@@ -89,10 +94,14 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             channel.editMessageById(game.messageId, game.hit(true)).queue(message -> message.removeReaction("\u261D", game.player).queue());
             if (game.userScore > 21) {
                 channel.sendMessage("Bust! Du hast leider verloren!").queue();
-                channel.removeReactionById(game.messageId, "\u261D").queue();
-                channel.removeReactionById(game.messageId, "\u270B").queue();
-                games.remove(event.getUser());
+            } else if(game.userScore == 21) {
+                channel.sendMessage("Blackjack! Du hast gewonnen!").queue();
+            } else {
+                return true;
             }
+            channel.removeReactionById(game.messageId, "\u261D").queue();
+            channel.removeReactionById(game.messageId, "\u270B").queue();
+            games.remove(event.getUser());
             return true;
         }
 
@@ -117,20 +126,22 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
 
         private User player;
         private String messageId;
-        private int numberOfCards;
         private int userScore;
         private int dealerScore;
+
+        private int bet;
 
         private final ArrayList<Cards> dealerCards;
         private final ArrayList<Cards> playerCards;
         private final Stack<Cards> kartenstapel;
 
         public Game() {
-            this.numberOfCards = 2;
             this.dealerCards = new ArrayList<>();
             this.playerCards = new ArrayList<>();
             this.kartenstapel = new Stack<>();
 
+            kartenstapel.addAll(Arrays.asList(Cards.values()));
+            kartenstapel.addAll(Arrays.asList(Cards.values()));
             kartenstapel.addAll(Arrays.asList(Cards.values()));
             Collections.shuffle(kartenstapel);
             dealerCards.add(0, kartenstapel.pop());
@@ -147,7 +158,6 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             builder.addField("Your cards:", getCards(playerCards, newCard)
                     + "\nYour score: " + calculateScore(true), false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
-            numberOfCards++;
             userScore = calculateScore(true);
             return builder.build();
         }
@@ -165,7 +175,6 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             builder.addField("Your cards:", getCards(playerCards, false)
                     + "\nYour score: " + userScore, false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
-            numberOfCards++;
             return builder.build();
         }
 

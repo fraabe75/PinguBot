@@ -3,7 +3,9 @@ package com.example.demo.core;
 import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
+import com.example.demo.plugins.impl.Roulette;
 import com.example.demo.plugins.impl.UserManager;
+import com.example.demo.plugins.impl.blackjack.Blackjack;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -61,10 +63,12 @@ public class MainListener extends ListenerAdapter {
                 args.length < 2 ? "" : args[1]
         };
 
-        if (args[0].equals("help")) {
+        if (args[0].equals("help") || args[0].equals("")) {
             event.getChannel().sendMessage(
                     switch (args[1]) {
-                        case "users", "user", "usermanager" -> UserManager.help();
+                        case "usermanager", "user", "u" -> UserManager.help();
+                        case "roulette", "rlt", "r" -> Roulette.help();
+                        case "blackjack", "bj", "b" -> Blackjack.help();
                         default -> {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
@@ -75,7 +79,7 @@ public class MainListener extends ListenerAdapter {
                                         new MessageEmbed.Field(plugin.getName(), plugin.getDescription(), false)
                                 );
                             }
-                            builder.setFooter("For detailed help messages:\n" + prefix + " help <command>");
+                            builder.setFooter("For detailed help messages:\n'" + prefix + " help <command>'");
                             yield builder.build();
                         }
                     }
@@ -86,7 +90,7 @@ public class MainListener extends ListenerAdapter {
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(args[0])) {
                 if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[0], args[1], prefix)) {
-                    channel.sendMessage("Couldn't find command").queue();
+                    channel.sendMessage("Couldn't find command! Try 'dp! help'").queue();
                 }
                 return;
             }
