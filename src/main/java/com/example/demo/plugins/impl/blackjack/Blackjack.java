@@ -90,7 +90,6 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             }
             case "end", "terminate" -> {
                 if (games.containsKey(user)) {
-                    games.get(user).updateAccount(false);
                     games.remove(user);
                     channel.sendMessage("Terminated your current game!").queue();
                 } else {
@@ -212,7 +211,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             return builder.build();
         }
 
-        private String getCards(ArrayList<Cards> list, Boolean nextCard) {
+        private String getCards(ArrayList<Cards> list, boolean nextCard) {
             StringBuilder sb = new StringBuilder();
             sb.append(list.get(0).getName()).append("\n").append(list.get(1).getName()).append("\n");
             int i = 2;

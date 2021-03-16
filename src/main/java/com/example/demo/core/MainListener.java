@@ -91,10 +91,19 @@ public class MainListener extends ListenerAdapter {
         String command, param;
         if (args[0].equals("start") || args[0].equals("play") || args[0].equals("new") || args[0].equals("game") || args[0].equals("p")) {
             command = args[1];
-            param = args[0] + " " + args[2];
+            if(args[2].equals("")) {
+                param = args[0];
+            } else {
+                param = args[0] + " " + args[2];
+            }
         } else {
             command = args[0];
-            param = args[1] + " " + args[2];
+            if(args[2].equals("")) {
+                param = args[1];
+            } else {
+                param = args[1] + " " + args[2];
+            }
+
         }
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(command)) {
