@@ -89,21 +89,13 @@ public class MainListener extends ListenerAdapter {
         }
 
         String command, param;
-        if (args[0].equals("start") || args[0].equals("play") || args[0].equals("new") || args[0].equals("game") || args[0].equals("p")) {
+        if (args[0].equals("start") || args[0].equals("play") || args[0].equals("new") || args[0].equals("game")
+                || args[0].equals("p") || args[0].equals("end") || args[0].equals("terminate") || args[0].equals("e")) {
             command = args[1];
-            if(args[2].equals("")) {
-                param = args[0];
-            } else {
-                param = args[0] + " " + args[2];
-            }
+            param = (args[0] + " " + args[2]).trim();
         } else {
             command = args[0];
-            if(args[2].equals("")) {
-                param = args[1];
-            } else {
-                param = args[1] + " " + args[2];
-            }
-
+            param = (args[1] + " " + args[2]).trim();
         }
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(command)) {

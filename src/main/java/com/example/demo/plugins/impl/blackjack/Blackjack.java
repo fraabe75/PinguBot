@@ -88,9 +88,10 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                     channel.sendMessage("You are already playing!").queue();
                 }
             }
-            case "end", "terminate" -> {
+            case "end", "terminate", "e" -> {
                 if (games.containsKey(user)) {
                     games.remove(user);
+                    games.get(user).updateAccount(2);
                     channel.sendMessage("Terminated your current game!").queue();
                 } else {
                     channel.sendMessage("No game active!").queue();
