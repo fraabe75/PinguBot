@@ -187,11 +187,6 @@ class RouletteBoard {
         };
     }
 
-    public String getBoardImg() {
-        return "https://upload.wikimedia.org/wikipedia/commons/" +
-               "thumb/4/47/Roulette_pfad.svg/881px-Roulette_pfad.svg.png";
-    }
-
     private interface RouletteField {
         boolean isThisField(String userInput);
 
@@ -249,7 +244,7 @@ class RouletteBoard {
         }
 
         @Override public void addBet(long userID, long amount) {
-            currentBets.put(userID, amount);
+            currentBets.merge(userID, amount, Long::sum);
         }
 
         @Override public String toString() {

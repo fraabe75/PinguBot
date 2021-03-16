@@ -12,6 +12,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.Random;
 
 @Service
@@ -148,6 +149,9 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                                             + ", but we "
                                             + "couldn't find any more fish in your bank.\nYou are officially bankrupt.")
                                .queue(m -> lastErrorMessageID = m.getIdLong());
+                    } else if (betAmount <= 0) {
+                        channel.sendMessage("Sorry, no bets <= 0 fish accepted.")
+                               .queue(m -> lastErrorMessageID = m.getIdLong());
                     } else {
                         if (!board.addBet(authorID, betAmount, betField)) {
                             EmbedBuilder builder = new EmbedBuilder();
@@ -177,7 +181,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
     private void printOrUpdateBoard(RouletteBoard b, TextChannel ch) {
         EmbedBuilder builder = new EmbedBuilder();
-        builder.setImage(b.getBoardImg());
+        builder.setImage("attachment://roulette_board.png");
         builder.addField(b.getBetsRepr());
 
         int timeRemaining = b.getBetTimeRemaining();
@@ -186,7 +190,6 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
         if (timeRemaining <= 60000 && timeRemaining > 0) {
             builder.setThumbnail("https://media.giphy.com/media/3o7bugURGG1BktXHl6/source.gif");
 
-            ClassPathResource file = new ClassPathResource("roulette_time.gif");
             builder.setFooter(
                     "s bet time remaining!",
                     "https://raw.githubusercontent.com/fraabe75/PinguBot/master/src/main/resources/" +
@@ -199,15 +202,21 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         if (b.getUpdateMessage() < 0) {
-            ch.sendMessage(builder.build()).queue(m -> b.setUpdateMessage(m.getIdLong()));
+            ch.sendMessage(builder.build())
+              .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
+              .queue(m -> b.setUpdateMessage(m.getIdLong()));
         } else {
             ch.getHistoryAfter(b.getUpdateMessage(), 6).queue(
                     mh -> {
                         if (mh.size() > 5) {
                             ch.deleteMessageById(b.getUpdateMessage()).queue();
-                            ch.sendMessage(builder.build()).queue(m -> b.setUpdateMessage(m.getIdLong()));
+                            ch.sendMessage(builder.build())
+                              .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
+                              .queue(m -> b.setUpdateMessage(m.getIdLong()));
                         } else {
-                            ch.editMessageById(b.getUpdateMessage(), builder.build()).queue();
+                            ch.editMessageById(b.getUpdateMessage(), builder.build())
+                              .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
+                              .queue();
                         }
                     }
             );
