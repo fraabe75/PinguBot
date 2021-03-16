@@ -1,5 +1,7 @@
 package com.example.demo.plugins.impl.blackjack;
 
+import com.example.demo.database.entities.UserEntity;
+import com.example.demo.database.repositories.UserRepository;
 import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
@@ -17,19 +19,20 @@ import java.util.*;
 public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, GuildMessageReactionAddPlugin {
 
     private final HashMap<User, Game> games = new HashMap<>();
+    private final UserRepository userRepository;
 
-    public Blackjack() {
+    public Blackjack(UserRepository userRepository) {
         setName("Blackjack");
         setDescription("Play a fun game of Blackjack!");
         addCommands("b", "bj", "blackjack");
+        this.userRepository = userRepository;
     }
 
     public static MessageEmbed help() {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Blackjack Help");
         builder.setDescription("Las Vegas is the only place I know\nwhere money really talks. It says goodbye.\n~ Frank Sinatra");
-        builder.addField("blackjack play", "start a new game", false);
-        builder.addField("blackjack place <value>", "place your bet", false);
+        builder.addField("blackjack play <value>", "start a new game", false);
         builder.addField("blackjack end", "end the current game", false);
         builder.setFooter("Shortcuts: 'bj', 'b'");
         return builder.build();
@@ -46,33 +49,53 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         User user = event.getAuthor();
 
         switch (param.trim().split(" ")[0]) {
-            case "start", "play", "new", "game" -> {
+            case "start", "play", "new", "game", "p" -> {
                 if (!games.containsKey(user)) {
-                    Game game = new Game();
+                    long bet = 0;
+                    trycatch:
+                    try {
+                        if(param.trim().split(" ").length == 1) {
+                            break trycatch;
+                        }
+                        bet = Integer.parseInt(param.trim().split(" ")[1]);
+                        UserEntity player = userRepository.findById(Long.parseLong(user.getId())).get();
+                        if (bet < 0 || bet > player.getFish()) {
+                            throw new Exception();
+                        }
+                        player.subFish(bet);
+                        userRepository.saveAndFlush(player);
+                    } catch (Exception e) {
+                        channel.sendMessage("Invalid bet!").queue();
+                        return true;
+                    }
+                    Game game = new Game(userRepository);
                     games.put(event.getAuthor(), game);
+                    game.player = user;
+                    game.bet = bet;
                     channel.sendMessage(game.hit(false)).queue(message -> {
                         message.addReaction("\u261D").queue();
                         message.addReaction("\u270B").queue();
                         game.messageId = message.getId();
                     });
-                    game.player = user;
-                    System.out.println(game.dealerCards.get(0));
+                    if (game.userScore == 21) {
+                        game.updateAccount(true);
+                        channel.sendMessage("Blackjack! You win!").queue();
+                        channel.removeReactionById(game.messageId, "\u261D").queue();
+                        channel.removeReactionById(game.messageId, "\u270B").queue();
+                        games.remove(user);
+                    }
                 } else {
                     channel.sendMessage("You are already playing!").queue();
                 }
             }
-            case "place", "bet", "set"  -> {
-                try {
-                    games.get(user).bet = Integer.parseInt(param.trim().split(" ")[1]);
-                } catch (Exception e) {
-                    channel.sendMessage("Invalid value!").queue();
-                }
-
-
-
-            }
             case "end", "terminate" -> {
-                channel.sendMessage("Terminated your current game.").queue();
+                if (games.containsKey(user)) {
+                    games.get(user).updateAccount(false);
+                    games.remove(user);
+                    channel.sendMessage("Terminated your current game!").queue();
+                } else {
+                    channel.sendMessage("No game active!").queue();
+                }
             }
             default -> channel.sendMessage(help()).queue();
         }
@@ -93,25 +116,26 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         if (event.getReactionEmote().getEmoji().equals("\u261D")) {
             channel.editMessageById(game.messageId, game.hit(true)).queue(message -> message.removeReaction("\u261D", game.player).queue());
             if (game.userScore > 21) {
-                channel.sendMessage("Bust! Du hast leider verloren!").queue();
-            } else if(game.userScore == 21) {
-                channel.sendMessage("Blackjack! Du hast gewonnen!").queue();
-            } else {
-                return true;
+                game.updateAccount(false);
+                channel.sendMessage("Bust! You have unfortunately lost!").queue();
+                channel.removeReactionById(game.messageId, "\u261D").queue();
+                channel.removeReactionById(game.messageId, "\u270B").queue();
+                games.remove(event.getUser());
             }
-            channel.removeReactionById(game.messageId, "\u261D").queue();
-            channel.removeReactionById(game.messageId, "\u270B").queue();
-            games.remove(event.getUser());
             return true;
         }
 
         //stand
         if (event.getReactionEmote().getEmoji().equals("\u270B")) {
             channel.editMessageById(game.messageId, game.stand()).queue(message -> message.removeReaction("\u270B", game.player).queue());
-            if (game.dealerScore > 21 || game.dealerScore <= game.userScore) {
-                channel.sendMessage("Gewonnen! Du hast den Dealer geschlagen!").queue();
+            if (game.dealerScore > 21 || game.dealerScore < game.userScore) {
+                game.updateAccount(true);
+                channel.sendMessage("Winner! You have beaten the dealer! ").queue();
+            } else if (game.dealerScore == game.userScore) {
+                channel.sendMessage("Stand off! You get your fish back!").queue();
             } else {
-                channel.sendMessage("Du hast leider verloren!").queue();
+                game.updateAccount(false);
+                channel.sendMessage("You have unfortunately lost!").queue();
             }
             channel.removeReactionById(game.messageId, "\u261D").queue();
             channel.removeReactionById(game.messageId, "\u270B").queue();
@@ -128,17 +152,20 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         private String messageId;
         private int userScore;
         private int dealerScore;
-
-        private int bet;
+        private int numberOfCards;
+        private long bet;
 
         private final ArrayList<Cards> dealerCards;
         private final ArrayList<Cards> playerCards;
         private final Stack<Cards> kartenstapel;
 
-        public Game() {
+        public Game(UserRepository userRepository) {
+            super(userRepository);
             this.dealerCards = new ArrayList<>();
             this.playerCards = new ArrayList<>();
             this.kartenstapel = new Stack<>();
+            this.numberOfCards = 2;
+            this.bet = 0;
 
             kartenstapel.addAll(Arrays.asList(Cards.values()));
             kartenstapel.addAll(Arrays.asList(Cards.values()));
@@ -148,23 +175,30 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             playerCards.add(0, kartenstapel.pop());
             dealerCards.add(1, kartenstapel.pop());
             playerCards.add(1, kartenstapel.pop());
+
+            userScore = calculateScore(true);
         }
 
         private MessageEmbed hit(Boolean newCard) {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Blackjack");
+            builder.setDescription("Player: " + player.getName() + "\nStakes: " + bet + " \uD83D\uDC1F");
             builder.addField("Cards of dealer:", "secret card\n" + dealerCards.get(1).getName()
-                    + "\nDealer score: " + dealerCards.get(1).getValue(), false);
+                    + "\n\nDealer score: " + dealerCards.get(1).getValue(), false);
             builder.addField("Your cards:", getCards(playerCards, newCard)
                     + "\nYour score: " + calculateScore(true), false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
             userScore = calculateScore(true);
+            if (newCard) {
+                numberOfCards++;
+            }
             return builder.build();
         }
 
         private MessageEmbed stand() {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Blackjack");
+            builder.setDescription("Player: " + player.getName() + "\nStakes: " + bet + " \uD83D\uDC1F");
             dealerScore = calculateScore(false);
             while (dealerScore < 17) {
                 getCards(dealerCards, true);
@@ -212,6 +246,17 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                 }
             }
             return sum;
+        }
+
+        private void updateAccount(boolean result) {
+            UserEntity user = super.userRepository.findById(Long.parseLong(player.getId())).get();
+            if (result) {
+                user.addFish(bet * 2L);
+                if (numberOfCards == 2 && userScore == 21) {
+                    user.addFish(bet / 2);
+                }
+            }
+            super.userRepository.saveAndFlush(user);
         }
     }
 

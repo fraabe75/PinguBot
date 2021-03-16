@@ -118,13 +118,13 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
                 if (board == null || board.isFinished() || board.getBetTimeRemaining() <= 0) {
                     channel.sendMessage(
-                            "No game in progress, start a new one with `"
+                            "No game in progress, start a new one with '"
                             + prefix
-                            + " rlt play`"
+                            + " rlt play'"
                     ).queue(m -> lastErrorMessageID = m.getIdLong());
                 } else if (!param.matches("^[\\d\\w]+ \\d+$")) {
                     channel.sendMessage("Bot does not compute (invalid bet format)\n" +
-                                        "Better try this: `" + prefix + " rlt bet <field> <amount>`")
+                                        "Better try this: '" + prefix + " rlt bet <field> <amount>'")
                            .queue(m -> lastErrorMessageID = m.getIdLong());
                 } else {
                     long authorID = event.getAuthor().getIdLong();

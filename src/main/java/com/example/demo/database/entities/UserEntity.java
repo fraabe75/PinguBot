@@ -48,6 +48,10 @@ public class UserEntity {
         this.fish += toAdd;
     }
 
+    public synchronized void subFish(long toSub) {
+        this.fish -= toSub;
+    }
+
     public long getMateability() {
         return mateability;
     }

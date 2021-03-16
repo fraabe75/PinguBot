@@ -57,10 +57,11 @@ public class MainListener extends ListenerAdapter {
             return;
         }
 
-        String[] args = message.substring(prefix.length()).trim().split(" ", 2);
+        String[] args = message.substring(prefix.length()).trim().split(" ", 3);
         args = new String[]{
                 args[0],
-                args.length < 2 ? "" : args[1]
+                args.length < 2 ? "" : args[1],
+                args.length < 3 ? "" : args[2]
         };
 
         if (args[0].equals("help") || args[0].equals("")) {
@@ -74,10 +75,10 @@ public class MainListener extends ListenerAdapter {
                             builder.setTitle("Help! You need somebody?");
                             builder.setDescription("Not just anybody?");
                             for (Plugin plugin : plugins) {
-                                if(!plugin.commands().contains("naughty"))
-                                builder.addField(
-                                        new MessageEmbed.Field(plugin.getName(), plugin.getDescription(), false)
-                                );
+                                if (!plugin.commands().contains("naughty"))
+                                    builder.addField(
+                                            new MessageEmbed.Field(plugin.getName(), plugin.getDescription(), false)
+                                    );
                             }
                             builder.setFooter("For detailed help messages:\n'" + prefix + " help <command>'");
                             yield builder.build();
@@ -87,14 +88,22 @@ public class MainListener extends ListenerAdapter {
             return;
         }
 
+        String command, param;
+        if (args[0].equals("start") || args[0].equals("play") || args[0].equals("new") || args[0].equals("game") || args[0].equals("p")) {
+            command = args[1];
+            param = args[0] + " " + args[2];
+        } else {
+            command = args[0];
+            param = args[1] + " " + args[2];
+        }
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
-            if (((Plugin) guildMessageReceivedPlugin).commands().contains(args[0])) {
-                if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[0], args[1], prefix)) {
+            if (((Plugin) guildMessageReceivedPlugin).commands().contains(command)) {
+                if (!guildMessageReceivedPlugin.guildMessageReceived(event, command, param, prefix)) {
                     channel.sendMessage("Couldn't find command! Try 'dp! help'").queue();
                 }
                 return;
             }
         }
-        channel.sendMessage("Couldn't find command in any plugins").queue();
+        channel.sendMessage("Couldn't find command in any plugins!").queue();
     }
 }

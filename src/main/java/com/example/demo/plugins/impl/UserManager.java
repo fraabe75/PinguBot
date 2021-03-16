@@ -44,16 +44,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("User Help");
         builder.setDescription("UserManager here, how may I help you?");
-        builder.addField(
-                "user <@username>",
-                "display current stats",
-                false
-        );
-        builder.addField(
-                "global",
-                "display the global ranking",
-                false
-        );
+        builder.addField("user <@username>", "display current stats", false);
+        builder.addField("global", "display the global ranking", false);
         return builder.build();
     }
 
