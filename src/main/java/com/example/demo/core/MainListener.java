@@ -90,21 +90,19 @@ public class MainListener extends ListenerAdapter {
         }
 
         String command, param;
-        if (args[0].equals("start") || args[0].equals("play") || args[0].equals("new") || args[0].equals("game")
-                || args[0].equals("p") || args[0].equals("end") || args[0].equals("terminate") || args[0].equals("e")) {
-            command = args[1];
-            param = (args[0] + " " + args[2]).trim();
-        } else {
-            command = args[0];
-            param = (args[1] + " " + args[2]).trim();
+        switch (args[0]) {
+            case "bp", "pb", "rp", "pr" -> args[0] = args[0].charAt(0) + " " + args[0].charAt(1);
+
         }
-        if(args[0].equals("pb") || args[0].equals("bp")) {
-            command = "b";
-            param = ("p " + args[1] + " " + args[2]).trim();
-        }
-        if(args[0].equals("pr") || args[0].equals("rp")) {
-            command = "r";
-            param = ("p " + args[1] + " " + args[2]).trim();
+        switch (args[0]) {
+            case "start", "play", "new", "game", "p", "end", "termninate", "e" -> {
+                command = args[1];
+                param = (args[0] + " " + args[2]).trim();
+            }
+            default -> {
+                command = args[0];
+                param = (args[1] + " " + args[2]).trim();
+            }
         }
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(command)) {
