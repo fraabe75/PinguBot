@@ -26,7 +26,8 @@ public class UserEntity {
         this.mateability = 0;
     }
 
-    public UserEntity() { }
+    public UserEntity() {
+    }
 
     public Long getUserId() {
         return userId;
@@ -53,12 +54,12 @@ public class UserEntity {
     }
 
     public synchronized void addMateability(long toAdd) {
-        if (this.mateability + toAdd >= 0) {
-            this.mateability += toAdd;
-        }
+        this.mateability += toAdd;
     }
 
     public synchronized void subMateability(long toSub) {
-        this.mateability -= toSub;
+        if (this.mateability - toSub >= 0) {
+            this.mateability -= toSub;
+        }
     }
 }

@@ -78,7 +78,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                         game.messageId = message.getId();
                     });
                     if (game.userScore == 21) {
-                        game.updateAccount(true);
+                        game.updateAccount(1);
                         channel.sendMessage("Blackjack! You win!").queue();
                         channel.removeReactionById(game.messageId, "\u261D").queue();
                         channel.removeReactionById(game.messageId, "\u270B").queue();
@@ -115,7 +115,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         if (event.getReactionEmote().getEmoji().equals("\u261D")) {
             channel.editMessageById(game.messageId, game.hit(true)).queue(message -> message.removeReaction("\u261D", game.player).queue());
             if (game.userScore > 21) {
-                game.updateAccount(false);
+                game.updateAccount(2);
                 channel.sendMessage("Bust! You have unfortunately lost!").queue();
                 channel.removeReactionById(game.messageId, "\u261D").queue();
                 channel.removeReactionById(game.messageId, "\u270B").queue();
@@ -128,12 +128,13 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         if (event.getReactionEmote().getEmoji().equals("\u270B")) {
             channel.editMessageById(game.messageId, game.stand()).queue(message -> message.removeReaction("\u270B", game.player).queue());
             if (game.dealerScore > 21 || game.dealerScore < game.userScore) {
-                game.updateAccount(true);
+                game.updateAccount(1);
                 channel.sendMessage("Winner! You have beaten the dealer! ").queue();
             } else if (game.dealerScore == game.userScore) {
+                game.updateAccount(1);
                 channel.sendMessage("Stand off! You get your fish back!").queue();
             } else {
-                game.updateAccount(false);
+                game.updateAccount(2);
                 channel.sendMessage("You have unfortunately lost!").queue();
             }
             channel.removeReactionById(game.messageId, "\u261D").queue();
@@ -247,17 +248,22 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             return sum;
         }
 
-        private void updateAccount(boolean result) {
+        private void updateAccount(int result) {
             UserEntity user = super.userRepository.findById(Long.parseLong(player.getId())).get();
-            if (result) {
-                user.addFish(bet * 2L);
-                user.addMateability(1);
-                if (numberOfCards == 2 && userScore == 21) {
-                    user.addFish(bet / 2);
+            switch (result) {
+                //stand off
+                case 0 -> user.addFish(bet);
+                //win
+                case 1 -> {
+                    user.addFish(bet * 2L);
                     user.addMateability(1);
+                    if (numberOfCards == 2 && userScore == 21) {
+                        user.addFish(bet / 2);
+                        user.addMateability(1);
+                    }
                 }
-            } else {
-                user.subMateability(1);
+                //loose
+                case 2 -> user.subMateability(1);
             }
             super.userRepository.saveAndFlush(user);
         }
