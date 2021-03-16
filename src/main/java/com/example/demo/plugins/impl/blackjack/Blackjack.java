@@ -141,7 +141,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             channel.editMessageById(game.messageId, game.stand()).queue(message -> message.removeReaction("\u270B", game.player).queue());
             if (game.dealerScore > 21 || game.dealerScore < game.userScore) {
                 game.updateAccount(1);
-                channel.sendMessage("Winner! You won " + game.bet * 2 + " \uD83D\uDC1F !").queue();
+                channel.sendMessage("Winner! You won " + game.bet + " \uD83D\uDC1F !").queue();
             } else if (game.dealerScore == game.userScore) {
                 game.updateAccount(1);
                 channel.sendMessage("Stand off! You get " + game.bet + " \uD83D\uDC1F back!").queue();
