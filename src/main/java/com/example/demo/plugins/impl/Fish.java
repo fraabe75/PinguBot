@@ -24,7 +24,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin {
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
         TextChannel channel = event.getChannel();
-        int numberOfFish = (int) (Math.random() * 10);
+        int numberOfFish = (int) (Math.random() * 10) + 1;
         String id = event.getMember().getId();
         UserEntity user = userRepository.findById(Long.parseLong(id)).get();
         user.addFish(numberOfFish);
