@@ -59,4 +59,8 @@ public class UserEntity {
     public synchronized void addMateability(long toAdd) {
         this.mateability += toAdd;
     }
+
+    public synchronized void subMateability(long toSub) {
+        this.mateability -= toSub;
+    }
 }

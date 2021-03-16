@@ -252,9 +252,13 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             UserEntity user = super.userRepository.findById(Long.parseLong(player.getId())).get();
             if (result) {
                 user.addFish(bet * 2L);
+                user.addMateability(1);
                 if (numberOfCards == 2 && userScore == 21) {
                     user.addFish(bet / 2);
+                    user.addMateability(1);
                 }
+            } else {
+                user.subMateability(1);
             }
             super.userRepository.saveAndFlush(user);
         }
