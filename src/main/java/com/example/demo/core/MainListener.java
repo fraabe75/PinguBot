@@ -90,6 +90,7 @@ public class MainListener extends ListenerAdapter {
         }
 
         if (Arrays.stream(new String[]{"pb", "bp", "pr", "rp"}).anyMatch(args[0]::contains)) {
+            args[2] = args[1];
             args[1] = String.valueOf(args[0].charAt(1));
             args[0] = String.valueOf(args[0].charAt(0));
         }

@@ -46,7 +46,9 @@ public class UserEntity {
     }
 
     public synchronized void subFish(long toSub) {
-        this.fish -= toSub;
+        if (this.fish - toSub >= 0) {
+            this.fish -= toSub;
+        }
     }
 
     public long getMateability() {
