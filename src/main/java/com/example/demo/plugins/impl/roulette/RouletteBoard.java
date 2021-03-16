@@ -21,8 +21,9 @@ class RouletteBoard {
             Color.BLACK, Color.RED, Color.BLACK, Color.RED, Color.BLACK, Color.RED
     };
 
+    private Stack<ColorEmotePair> colorEmoteMap;
     private final List<RouletteField> fields;
-    private final Map<Long, UserEntity> players;
+    private final Map<Long, UserColorEmoteTriple> players;
     private long updateMessage;
     private boolean finished;
 
@@ -33,6 +34,8 @@ class RouletteBoard {
         fields = new ArrayList<>();
         updateMessage = Long.MIN_VALUE;
         players = new HashMap<>();
+
+        fillPlayerColorStack();
 
         for (int i = 0; i <= 36; i++) {
             fields.add(new Number(String.valueOf(i)));
@@ -51,6 +54,18 @@ class RouletteBoard {
             }
             resultConsumer.accept(this);
         }).start();
+    }
+
+    private void fillPlayerColorStack() {
+        colorEmoteMap = new Stack<ColorEmotePair>();
+        colorEmoteMap.add(new ColorEmotePair(Color.BLACK, ":black_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.WHITE, ":white_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.RED, ":red_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.BLUE, ":blue_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.getHSBColor(40, 100, 40), ":brown_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.MAGENTA, ":magenta_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.YELLOW, ":yellow_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.ORANGE, ":orange_circle:"));
     }
 
     public boolean isNewPlayer(long userID) {
@@ -99,8 +114,13 @@ class RouletteBoard {
         this.updateMessage = updateMessage;
     }
 
-    public void addPlayer(UserEntity player) {
-        players.put(player.getUserId(), player);
+    public boolean addPlayer(UserEntity player) {
+        if (colorEmoteMap.isEmpty()) {
+            return false;
+        }
+        ColorEmotePair color = colorEmoteMap.pop();
+        players.put(player.getUserId(), new UserColorEmoteTriple(player, color.getColor(), color.getEmote()));
+        return true;
     }
 
     public boolean addBet(long userID, long amount, String fieldSelect) {
@@ -131,7 +151,7 @@ class RouletteBoard {
             );
         }
         userBets.forEach(
-                (uID, rltFields) -> betBuilder.append(players.get(uID).getUserName())
+                (uID, rltFields) -> betBuilder.append(players.get(uID).getUser().getUserName())
                                               .append(": ")
                                               .append(rltFields.stream()
                                                                .map(rltField -> rltField.toString()
@@ -161,7 +181,7 @@ class RouletteBoard {
                 ))
         );
         userPayoutMap.forEach((uID, investReturn) -> builder.addField(
-                players.get(uID).getUserName(),
+                players.get(uID).getUser().getUserName(),
                 investReturn + " :fish: " + (investReturn > 0 ? " (+1 Mateability)" : ""),
                 true)
         );
@@ -208,119 +228,4 @@ class RouletteBoard {
         }
     }
 
-    private interface RouletteField {
-        boolean isThisField(String userInput);
-
-        long calculatePayout(long userBet);
-
-        void addBet(long userID, long amount);
-
-        Map<Long, Long> getCurrentBets();
-
-        boolean isSpecialField();
-
-        String getDescription();
-    }
-
-    private enum Field implements RouletteField {
-        BLACK(2, "black", "black tiles"),
-        RED(2, "red", "red tiles"),
-
-        EVEN(2, "pair", "even tiles"),
-        ODD(2, "impair", "odd tiles"),
-
-        COL_1(3, "col1", "left column"),
-        COL_2(3, "col2", "middle column"),
-        COL_3(3, "col3", "right column"),
-
-        SQR_1(3, "p12", "1 - 12"),
-        SQR_2(3, "m12", "13 - 24"),
-        SQR_3(3, "d12", "25 - 36"),
-
-        LOW(2, "manque", "1 - 18"),
-        HIGH(2, "passe", "19 - 36");
-
-        private final String emote;
-        private final int payout;
-        private final Map<Long, Long> currentBets;
-        private final String description;
-
-        Field(int payout, String emote, String description) {
-            this.emote = emote;
-            this.payout = payout;
-            this.currentBets = new HashMap<>();
-            this.description = description;
-        }
-
-        public int getPayout() {
-            return payout;
-        }
-
-        @Override public boolean isThisField(String userInput) {
-            return this.emote.equals(userInput);
-        }
-
-        @Override public long calculatePayout(long userBet) {
-            return userBet * payout;
-        }
-
-        @Override public void addBet(long userID, long amount) {
-            currentBets.merge(userID, amount, Long::sum);
-        }
-
-        @Override public String toString() {
-            return emote;
-        }
-
-        @Override public Map<Long, Long> getCurrentBets() {
-            return currentBets;
-        }
-
-        @Override public boolean isSpecialField() {
-            return true;
-        }
-
-        @Override public String getDescription() {
-            return description;
-        }
-    }
-
-    private static class Number implements RouletteField {
-
-        private final String emote;
-        private final Map<Long, Long> currentBets;
-
-        Number(String number) {
-            this.emote = number;
-            this.currentBets = new HashMap<>();
-        }
-
-        @Override public boolean isThisField(String userInput) {
-            return this.emote.equals(userInput);
-        }
-
-        @Override public long calculatePayout(long userBet) {
-            return 36 * userBet;
-        }
-
-        @Override public String toString() {
-            return emote;
-        }
-
-        @Override public void addBet(long userID, long amount) {
-            currentBets.put(userID, amount);
-        }
-
-        @Override public Map<Long, Long> getCurrentBets() {
-            return currentBets;
-        }
-
-        @Override public boolean isSpecialField() {
-            return false;
-        }
-
-        @Override public String getDescription() {
-            return emote;
-        }
-    }
 }

@@ -26,7 +26,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
     public Roulette(UserRepository userRepository) {
         setName("Roulette");
         setDescription("Play your favorite, not at all random,\ngambling game!");
-        addCommands("roulette", "rlt", "r", "rtl");
+        addCommands("roulette", "rlt", "r", "rtl", "rl");
 
         this.userRepository = userRepository;
     }
@@ -140,7 +140,10 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                             );
                         }
                         author = userRepository.getOne(authorID);
-                        board.addPlayer(author);
+                        if (!board.addPlayer(author)) {
+                            channel.sendMessage("Reached player limit of 8 players,\nno more players can join.")
+                                   .queue();
+                        }
                     } else {
                         author = userRepository.getOne(authorID);
                     }
@@ -213,25 +216,16 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
         if (b.getUpdateMessage() < 0) {
             ch.sendMessage(builder.build())
-              .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
+              .addFile(BoardImageGenerator.getImageFile(board), "roulette_board.png")
               .queue(m -> b.setUpdateMessage(m.getIdLong()));
         } else {
-            ch.getHistoryAfter(b.getUpdateMessage(), 6).queue(
-                    mh -> {
-                        if (mh.size() > 5) {
-                            ch.deleteMessageById(b.getUpdateMessage()).queue();
-                            ch.sendMessage(builder.build())
-                              .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
-                              .queue(m -> b.setUpdateMessage(m.getIdLong()));
-                            System.out.println("Made some more space for roulette!");
-                        } else {
-                            ch.editMessageById(b.getUpdateMessage(), builder.build())
-                              .clearFiles()
-                              //.addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
-                              .queue();
-                        }
-                    }
-            );
+            ch.retrieveMessageById(b.getUpdateMessage())
+              .queue(oldMessage -> oldMessage.delete().queue(
+                      oldMessageDelete -> ch.sendMessage(builder.build())
+                                            .addFile(BoardImageGenerator.getImageFile(board), "roulette_board.png")
+                                            .queue(m -> b.setUpdateMessage(m.getIdLong()))
+                      )
+              );
         }
     }
 
