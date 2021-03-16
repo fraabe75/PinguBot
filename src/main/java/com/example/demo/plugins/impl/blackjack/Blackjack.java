@@ -54,7 +54,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                     long bet = 0;
                     trycatch:
                     try {
-                        if(param.trim().split(" ").length == 1) {
+                        if (param.trim().split(" ").length == 1) {
                             break trycatch;
                         }
                         bet = Integer.parseInt(param.trim().split(" ")[1]);

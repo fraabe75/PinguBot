@@ -36,10 +36,6 @@ public class UserEntity {
         return userName;
     }
 
-    public void setUserName(@NotNull String userName) {
-        this.userName = userName;
-    }
-
     public long getFish() {
         return fish;
     }
@@ -57,7 +53,9 @@ public class UserEntity {
     }
 
     public synchronized void addMateability(long toAdd) {
-        this.mateability += toAdd;
+        if (this.mateability + toAdd >= 0) {
+            this.mateability += toAdd;
+        }
     }
 
     public synchronized void subMateability(long toSub) {

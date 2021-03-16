@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -174,15 +175,21 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     }
 
     private RankClasses.Rank getRank(UserEntity user) {
+
+        Map<String, RankClasses.Rank> ranks = rankClasses.getRankClasses();
+
         List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.ASC, "mateability"))
                                            .stream().map(UserEntity::getUserId).collect(Collectors.toList());
-        int place = userIDs.indexOf(user.getUserId()) * 9 / (userIDs.size() - 1);
-        return rankClasses.getRankClasses()
-                          .entrySet()
-                          .stream()
-                          .filter(e -> e.getValue().getLvl() == place)
-                          .findAny()
-                          .get()
-                          .getValue();
+        if (userIDs.get(userIDs.size() - 1).equals(user.getUserId())) {
+            return ranks.get("emperor");
+        }
+        int place = userIDs.indexOf(user.getUserId()) * 8 / (userIDs.size() - 1);
+
+        return ranks.entrySet()
+                    .stream()
+                    .filter(stringRankEntry -> stringRankEntry.getValue().getLvl() == place)
+                    .findAny()
+                    .get()
+                    .getValue();
     }
 }

@@ -5,11 +5,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -30,7 +27,7 @@ class RouletteBoard {
     private boolean finished;
 
     // time for users to submit bets in milliseconds
-    private int betTime = 59000;
+    private int betTime = 60000;
 
     public RouletteBoard(Consumer<RouletteBoard> resultConsumer) {
         fields = new ArrayList<>();
@@ -46,8 +43,8 @@ class RouletteBoard {
             while (betTime > 0) {
                 try {
                     //noinspection BusyWait
-                    Thread.sleep(5000);
-                    betTime -= 5000;
+                    Thread.sleep(1000);
+                    betTime -= 1000;
                 } catch (InterruptedException e) {
                     System.err.println(e.toString());
                 }
@@ -164,6 +161,20 @@ class RouletteBoard {
                 builder.addField(players.get(uID).getUserName(), String.valueOf(investReturn), true));
         if (userPayoutMap.isEmpty()) {
             builder.setDescription("No fish was thrown on the board,\nso there won't be any payout!");
+        } else {
+            String[] inspirationalGIFS = {
+                    "https://media1.tenor.com/images/67c3c645965f9dc695a0685c4ca67c1b/tenor.gif",
+                    "https://media1.tenor.com/images/e763b96b083acc07b12db01cac2f0c2a/tenor.gif",
+                    "https://media1.tenor.com/images/e5a5b641e155541428d17730ff14e929/tenor.gif",
+                    "https://media1.tenor.com/images/d478e6308d8b73b438600912e0d8c853/tenor.gif",
+                    "https://media1.tenor.com/images/f240426d58c969c2da5bff787c0a0113/tenor.gif",
+                    "https://media1.tenor.com/images/eafc3eb70afa2cd617dc0ff940f47131/tenor.gif",
+                    "https://media.giphy.com/media/l2SpO2558KNLdARcQ/source.gif",
+                    "https://media.giphy.com/media/l2SpNj080EmduKVEs/source.gif"
+            };
+            if (new Random().nextInt(10) == 1) {
+                builder.setImage(inspirationalGIFS[new Random().nextInt(inspirationalGIFS.length)]);
+            }
         }
         return userPayoutMap;
     }
@@ -172,19 +183,23 @@ class RouletteBoard {
         if (!field.isSpecialField()) {
             return Integer.parseInt(field.toString()) == rolledNumber;
         }
-        return switch ((Field) field) {
-            case BLACK, RED -> colorTable[rolledNumber] == Color.getColor(((Field) field).name());
-            case EVEN -> rolledNumber % 2 == 0;
-            case ODD -> rolledNumber % 2 == 1;
-            case COL_1 -> rolledNumber % 3 == 1;
-            case COL_2 -> rolledNumber % 3 == 2;
-            case COL_3 -> rolledNumber % 3 == 0 && rolledNumber != 0;
-            case SQR_1 -> rolledNumber != 0 && rolledNumber <= 12;
-            case SQR_2 -> rolledNumber >= 13 && rolledNumber <= 24;
-            case SQR_3 -> rolledNumber >= 25;
-            case LOW -> rolledNumber <= 18 && rolledNumber != 0;
-            case HIGH -> rolledNumber >= 19;
-        };
+        try {
+            return switch ((Field) field) {
+                case BLACK, RED -> colorTable[rolledNumber] == Color.class.getField(field.toString()).get(null);
+                case EVEN -> rolledNumber % 2 == 0;
+                case ODD -> rolledNumber % 2 == 1;
+                case COL_1 -> rolledNumber % 3 == 1;
+                case COL_2 -> rolledNumber % 3 == 2;
+                case COL_3 -> rolledNumber % 3 == 0 && rolledNumber != 0;
+                case SQR_1 -> rolledNumber != 0 && rolledNumber <= 12;
+                case SQR_2 -> rolledNumber >= 13 && rolledNumber <= 24;
+                case SQR_3 -> rolledNumber >= 25;
+                case LOW -> rolledNumber <= 18 && rolledNumber != 0;
+                case HIGH -> rolledNumber >= 19;
+            };
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            return false;
+        }
     }
 
     private interface RouletteField {

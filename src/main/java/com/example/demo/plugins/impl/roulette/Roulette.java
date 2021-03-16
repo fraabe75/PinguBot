@@ -25,7 +25,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
     public Roulette(UserRepository userRepository) {
         setName("Roulette");
         setDescription("Play your favorite, not at all random,\ngambling game!");
-        addCommands("roulette", "rlt", "r", "rtl");
+        addCommands("roulette", "rlt", "r", "rtl", "p");
 
         this.userRepository = userRepository;
     }
@@ -77,7 +77,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         switch (param.trim().split(" ")[0]) {
-            case "start", "play", "new", "game" -> {
+            case "start", "play", "new", "game", "p" -> {
                 if (board == null || board.isFinished()) {
                     board = new RouletteBoard((b) -> {
                         printOrUpdateBoard(b, channel);
@@ -91,14 +91,16 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         EmbedBuilder builder = new EmbedBuilder();
                         builder.setTitle("Payout");
                         b.addPayoutPerUser(builder, rolledNumber)
-                         .entrySet()
-                         .stream().filter(payoutEntry -> payoutEntry.getValue() > 0).forEach(
-                                payoutEntry -> {
-                                    UserEntity author = userRepository.getOne(payoutEntry.getKey());
-                                    author.addFish(payoutEntry.getValue());
-                                    userRepository.save(author);
-                                }
-                        );
+                         .forEach((key, value) -> {
+                             UserEntity author = userRepository.getOne(key);
+                             if (value > 0) {
+                                 author.addFish(value);
+                                 author.addMateability(1);
+                             } else {
+                                 author.addMateability(-1);
+                             }
+                             userRepository.save(author);
+                         });
                         userRepository.flush();
                         b.setFinished(true);
                         channel.sendMessage(builder.build()).queue();
@@ -142,7 +144,14 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         author = userRepository.getOne(authorID);
                     }
                     String betField = param.trim().split(" ")[0];
-                    long betAmount = Long.parseUnsignedLong(param.trim().split(" ")[1]);
+                    long betAmount;
+                    try {
+                        betAmount = Long.parseUnsignedLong(param.trim().split(" ")[1]);
+                    } catch (NumberFormatException e) {
+                        channel.sendMessage("Invalid bet! (Trying to overflow our bet system, he?)")
+                               .queue(m -> lastErrorMessageID = m.getIdLong());
+                        break;
+                    }
                     if (author.getFish() < betAmount) {
                         channel.sendMessage("We looked every, "
                                             + author.getUserName()
@@ -188,7 +197,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
         // add timeout information to footer
         if (timeRemaining <= 60000 && timeRemaining > 0) {
-            builder.setThumbnail("https://media.giphy.com/media/3o7bugURGG1BktXHl6/source.gif");
+            builder.setThumbnail("https://media.giphy.com/media/26uf2YTgF5upXUTm0/source.gif");
 
             builder.setFooter(
                     "s bet time remaining!",
@@ -213,6 +222,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                             ch.sendMessage(builder.build())
                               .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
                               .queue(m -> b.setUpdateMessage(m.getIdLong()));
+                            System.out.println("Made some more space for roulette!");
                         } else {
                             ch.editMessageById(b.getUpdateMessage(), builder.build())
                               .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
