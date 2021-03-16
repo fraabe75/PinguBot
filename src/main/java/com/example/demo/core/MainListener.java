@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -96,6 +97,14 @@ public class MainListener extends ListenerAdapter {
         } else {
             command = args[0];
             param = (args[1] + " " + args[2]).trim();
+        }
+        if(args[0].equals("pb") || args[0].equals("bp")) {
+            command = "b";
+            param = ("p " + args[1] + " " + args[2]).trim();
+        }
+        if(args[0].equals("pr") || args[0].equals("rp")) {
+            command = "r";
+            param = ("p " + args[1] + " " + args[2]).trim();
         }
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(command)) {

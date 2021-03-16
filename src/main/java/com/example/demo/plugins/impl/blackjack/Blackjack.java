@@ -34,6 +34,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         builder.setDescription("Las Vegas is the only place I know\nwhere money really talks. It says goodbye.\n~ Frank Sinatra");
         builder.addField("blackjack play <value>", "start a new game", false);
         builder.addField("blackjack end", "end the current game", false);
+        builder.addField("blackjack rules", "rules and payout rates", false);
         builder.setFooter("Shortcuts: 'bj', 'b'");
         return builder.build();
     }
@@ -79,7 +80,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                     });
                     if (game.userScore == 21) {
                         game.updateAccount(1);
-                        channel.sendMessage("Blackjack! You win!").queue();
+                        channel.sendMessage("Blackjack! You won " + game.bet + " \uD83D\uDC1F !").queue();
                         channel.removeReactionById(game.messageId, "\u261D").queue();
                         channel.removeReactionById(game.messageId, "\u270B").queue();
                         games.remove(user);
@@ -90,12 +91,19 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             }
             case "end", "terminate", "e" -> {
                 if (games.containsKey(user)) {
-                    games.remove(user);
                     games.get(user).updateAccount(2);
+                    games.remove(user);
                     channel.sendMessage("Terminated your current game!").queue();
                 } else {
                     channel.sendMessage("No game active!").queue();
                 }
+            }
+            case "rules" -> {
+                channel.sendMessage(new EmbedBuilder()
+                        .setTitle("Blackjack Rules & Payout")
+                        .addField("Rules", "https://de.wikipedia.org/wiki/Black_Jack", false)
+                        .addField("Payout", "Blackjack 3:2, win 1:1", false).build()
+                ).queue();
             }
             default -> channel.sendMessage(help()).queue();
         }
@@ -117,7 +125,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             channel.editMessageById(game.messageId, game.hit(true)).queue(message -> message.removeReaction("\u261D", game.player).queue());
             if (game.userScore > 21) {
                 game.updateAccount(2);
-                channel.sendMessage("Bust! You have unfortunately lost!").queue();
+                channel.sendMessage("Bust! You unfortunately lost " + game.bet + " \uD83D\uDC1F !").queue();
                 channel.removeReactionById(game.messageId, "\u261D").queue();
                 channel.removeReactionById(game.messageId, "\u270B").queue();
                 games.remove(event.getUser());
@@ -130,13 +138,13 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             channel.editMessageById(game.messageId, game.stand()).queue(message -> message.removeReaction("\u270B", game.player).queue());
             if (game.dealerScore > 21 || game.dealerScore < game.userScore) {
                 game.updateAccount(1);
-                channel.sendMessage("Winner! You have beaten the dealer! ").queue();
+                channel.sendMessage("Winner! You won " + game.bet * 2 + " \uD83D\uDC1F !").queue();
             } else if (game.dealerScore == game.userScore) {
                 game.updateAccount(1);
-                channel.sendMessage("Stand off! You get your fish back!").queue();
+                channel.sendMessage("Stand off! You get " + game.bet + " \uD83D\uDC1F back!").queue();
             } else {
                 game.updateAccount(2);
-                channel.sendMessage("You have unfortunately lost!").queue();
+                channel.sendMessage("You unfortunately lost " + game.bet + " \uD83D\uDC1F !").queue();
             }
             channel.removeReactionById(game.messageId, "\u261D").queue();
             channel.removeReactionById(game.messageId, "\u270B").queue();

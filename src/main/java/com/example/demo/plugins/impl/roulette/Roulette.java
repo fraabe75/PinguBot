@@ -25,7 +25,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
     public Roulette(UserRepository userRepository) {
         setName("Roulette");
         setDescription("Play your favorite, not at all random,\ngambling game!");
-        addCommands("roulette", "rlt", "r", "rtl", "p");
+        addCommands("roulette", "rlt", "r", "rtl");
 
         this.userRepository = userRepository;
     }
