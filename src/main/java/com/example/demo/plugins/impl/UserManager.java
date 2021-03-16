@@ -52,9 +52,6 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
     @Override
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
-        if (!commands().contains(command)) {
-            return false;
-        }
 
         long userID = event.getAuthor().getIdLong();
         UserEntity user;
@@ -69,7 +66,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         switch (command) {
-            case "score", "elo", "mateability", "user" -> {
+            case "score", "elo", "mateability" -> {
                 generateUserProfile(event.getChannel(), param, user);
             }
             case "global", "rank", "ranks", "stats" -> event.getChannel().sendMessage(globalRank(user)).queue();

@@ -30,7 +30,6 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin {
         user.addFish(numberOfFish);
         userRepository.saveAndFlush(user);
         channel.sendMessage(numberOfFish + " fish added to your repository!").queue();
-
         return true;
     }
 

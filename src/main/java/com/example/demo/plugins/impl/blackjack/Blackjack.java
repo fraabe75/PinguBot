@@ -43,10 +43,6 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
     @Override
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
-        if (!commands().contains(command)) {
-            return false;
-        }
-
         TextChannel channel = event.getChannel();
         User user = event.getAuthor();
         Member member = event.getMember();
