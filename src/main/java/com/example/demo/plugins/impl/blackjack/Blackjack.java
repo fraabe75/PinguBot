@@ -83,7 +83,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                     });
                     if (game.userScore == 21) {
                         game.updateAccount(1);
-                        channel.sendMessage("Blackjack! You won " + game.bet + " \uD83D\uDC1F !").queue();
+                        channel.sendMessage("Blackjack! You won " + game.bet * 3 / 2 + " \uD83D\uDC1F !").queue();
                         channel.removeReactionById(game.messageId, "\u261D").queue();
                         channel.removeReactionById(game.messageId, "\u270B").queue();
                         games.remove(user);
