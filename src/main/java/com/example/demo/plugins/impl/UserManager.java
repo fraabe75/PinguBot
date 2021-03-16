@@ -21,15 +21,23 @@ import java.util.stream.Collectors;
 @Service
 public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private final UserRepository userRepository;
+    private final RankClasses rankClasses;
 
-    @Autowired
-    private RankClasses rankClasses;
-
-    public UserManager(UserRepository userRepository) {
+    public UserManager(UserRepository userRepository, RankClasses rankClasses) {
         setName("User");
         setDescription("Displays userprofile stuff");
-        addCommands("score", "mateability", "elo", "rank", "ranks", "user", "global", "stats");
+        addCommands(
+                "score",
+                "mateability",
+                "elo",
+                "rank",
+                "ranks",
+                "user",
+                "global",
+                "stats"
+        );
         this.userRepository = userRepository;
+        this.rankClasses = rankClasses;
     }
 
     public static MessageEmbed help() {
@@ -68,8 +76,10 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         switch (command) {
-            case "score", "elo", "mateability", "user" -> generateUserProfile(event.getChannel(), param, user);
-            case "global", "rank", "ranks", "statistic" -> event.getChannel().sendMessage(globalRank(user)).queue();
+            case "score", "elo", "mateability", "user" -> {
+                generateUserProfile(event.getChannel(), param, user);
+            }
+            case "global", "rank", "ranks", "stats" -> event.getChannel().sendMessage(globalRank(user)).queue();
             default -> event.getChannel().sendMessage(help()).queue();
         }
 
@@ -135,6 +145,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                 positions.append(". ");
                 if (i == startIndex) positions.append("*");
                 positions.append(userList.get(i).getUserName());
+                positions.append(" - ");
+                positions.append(userList.get(i).getMateability());
                 if (i == startIndex) positions.append("*");
                 positions.append("\n");
             }
