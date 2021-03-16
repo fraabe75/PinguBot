@@ -6,6 +6,7 @@ import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.User;
@@ -48,6 +49,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
 
         TextChannel channel = event.getChannel();
         User user = event.getAuthor();
+        Member member = event.getMember();
 
         switch (param.trim().split(" ")[0]) {
             case "start", "play", "new", "game", "p" -> {
@@ -72,6 +74,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                     Game game = new Game(userRepository);
                     games.put(event.getAuthor(), game);
                     game.player = user;
+                    game.member = member;
                     game.bet = bet;
                     channel.sendMessage(game.hit(false)).queue(message -> {
                         message.addReaction("\u261D").queue();
@@ -158,6 +161,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
     static class Game extends Blackjack {
 
         private User player;
+        private Member member;
         private String messageId;
         private int userScore;
         private int dealerScore;
@@ -191,7 +195,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         private MessageEmbed hit(Boolean newCard) {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Blackjack");
-            builder.setDescription("Player: " + player.getName() + "\nStakes: " + bet + " \uD83D\uDC1F");
+            builder.setDescription("Player: " + member.getNickname() + "\nStakes: " + bet + " \uD83D\uDC1F");
             builder.addField("Cards of dealer:", "secret card\n" + dealerCards.get(1).getName()
                     + "\n\nDealer score: " + dealerCards.get(1).getValue(), false);
             builder.addField("Your cards:", getCards(playerCards, newCard)
@@ -207,7 +211,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         private MessageEmbed stand() {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Blackjack");
-            builder.setDescription("Player: " + player.getName() + "\nStakes: " + bet + " \uD83D\uDC1F");
+            builder.setDescription("Player: " + member.getNickname() + "\nStakes: " + bet + " \uD83D\uDC1F");
             dealerScore = calculateScore(false);
             while (dealerScore < 17) {
                 getCards(dealerCards, true);
