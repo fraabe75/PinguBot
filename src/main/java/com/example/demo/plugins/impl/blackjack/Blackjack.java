@@ -179,6 +179,9 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             kartenstapel.addAll(Arrays.asList(Cards.values()));
             kartenstapel.addAll(Arrays.asList(Cards.values()));
             kartenstapel.addAll(Arrays.asList(Cards.values()));
+            kartenstapel.addAll(Arrays.asList(Cards.values()));
+            kartenstapel.addAll(Arrays.asList(Cards.values()));
+            kartenstapel.addAll(Arrays.asList(Cards.values()));
             Collections.shuffle(kartenstapel);
             dealerCards.add(0, kartenstapel.pop());
             playerCards.add(0, kartenstapel.pop());
