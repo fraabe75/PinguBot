@@ -58,8 +58,6 @@ public class UserEntity {
     }
 
     public synchronized void subMateability(long toSub) {
-        if (this.mateability - toSub >= 0) {
-            this.mateability -= toSub;
-        }
+        this.mateability = (this.mateability - toSub <= 0 ? 0 : this.mateability - toSub);
     }
 }
