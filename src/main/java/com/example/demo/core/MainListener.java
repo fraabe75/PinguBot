@@ -89,24 +89,22 @@ public class MainListener extends ListenerAdapter {
             return;
         }
 
-        String command, param;
-        switch (args[0]) {
-            case "bp", "pb", "rp", "pr" -> args[0] = args[0].charAt(0) + " " + args[0].charAt(1);
-
+        if (Arrays.stream(new String[]{"pb", "bp", "pr", "rp"}).anyMatch(args[0]::contains)) {
+            args[1] = String.valueOf(args[0].charAt(1));
+            args[0] = String.valueOf(args[0].charAt(0));
         }
         switch (args[0]) {
             case "start", "play", "new", "game", "p", "end", "termninate", "e" -> {
-                command = args[1];
-                param = (args[0] + " " + args[2]).trim();
-            }
-            default -> {
-                command = args[0];
-                param = (args[1] + " " + args[2]).trim();
+                String tmp = args[1];
+                args[1] = args[0];
+                args[0] = tmp;
             }
         }
+        String param = String.join(" ", args[1], args[2]).trim();
+
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
-            if (((Plugin) guildMessageReceivedPlugin).commands().contains(command)) {
-                if (!guildMessageReceivedPlugin.guildMessageReceived(event, command, param, prefix)) {
+            if (((Plugin) guildMessageReceivedPlugin).commands().contains(args[0])) {
+                if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[0], param.trim(), prefix)) {
                     channel.sendMessage("Couldn't find command! Try 'dp! help'").queue();
                 }
                 return;

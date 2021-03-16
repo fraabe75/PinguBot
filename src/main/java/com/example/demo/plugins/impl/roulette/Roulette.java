@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
@@ -97,7 +98,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                                  author.addFish(value);
                                  author.addMateability(1);
                              } else {
-                                 author.addMateability(-1);
+                                 author.subMateability(1);
                              }
                              userRepository.save(author);
                          });
@@ -153,7 +154,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         break;
                     }
                     if (author.getFish() < betAmount) {
-                        channel.sendMessage("We looked every, "
+                        channel.sendMessage("We looked everywhere, "
                                             + author.getUserName()
                                             + ", but we "
                                             + "couldn't find any more fish in your bank.\nYou are officially bankrupt.")
@@ -173,17 +174,17 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                             }
                             channel.sendMessage(builder.build()).queue(m -> lastErrorMessageID = m.getIdLong());
                         } else {
-                            author.addFish(-betAmount);
+                            author.subFish(betAmount);
                             userRepository.saveAndFlush(author);
                             printOrUpdateBoard(board, channel);
                         }
                     }
                 }
             }
-            case "fields", "field" -> channel.sendMessage(helpFields()).queue(m -> lastErrorMessageID = m.getIdLong());
-            default -> channel.sendMessage(help()).queue(m -> lastErrorMessageID = m.getIdLong());
+            case "fields", "field", "rules" -> channel.sendMessage(helpFields()).queue(m -> lastErrorMessageID = null);
+            default -> channel.sendMessage(help()).queue(m -> lastErrorMessageID = null);
         }
-        event.getMessage().delete().delay(Duration.ofSeconds(8)).queue();
+        event.getMessage().delete().queueAfter(5, TimeUnit.SECONDS);
 
         return true;
     }
@@ -225,7 +226,8 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                             System.out.println("Made some more space for roulette!");
                         } else {
                             ch.editMessageById(b.getUpdateMessage(), builder.build())
-                              .addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
+                              .clearFiles()
+                              //.addFile(Objects.requireNonNull(BoardImageGenerator.getImageFile()))
                               .queue();
                         }
                     }

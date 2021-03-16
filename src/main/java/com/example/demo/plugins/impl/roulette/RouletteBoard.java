@@ -67,6 +67,9 @@ class RouletteBoard {
                             field.toString(),
                             field.getDescription() + ", " + (field.getPayout() - 1) + ":1", true)
             );
+            if (i == 1 || i == 3) {
+                fieldInfos.add(new MessageEmbed.Field("", "", true));
+            }
         }
         fieldInfos.add(new MessageEmbed.Field("0 - 36", "35:1", true));
         return fieldInfos;
@@ -157,8 +160,11 @@ class RouletteBoard {
                         Long::sum
                 ))
         );
-        userPayoutMap.forEach((uID, investReturn) ->
-                builder.addField(players.get(uID).getUserName(), String.valueOf(investReturn), true));
+        userPayoutMap.forEach((uID, investReturn) -> builder.addField(
+                players.get(uID).getUserName(),
+                investReturn + " :fish: " + (investReturn > 0 ? " (+1 Mateability)" : ""),
+                true)
+        );
         if (userPayoutMap.isEmpty()) {
             builder.setDescription("No fish was thrown on the board,\nso there won't be any payout!");
         } else {
