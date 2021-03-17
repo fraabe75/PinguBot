@@ -78,14 +78,14 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                         message.addReaction("\u261D").queue();
                         message.addReaction("\u270B").queue();
                         game.messageId = message.getId();
+                        if (game.userScore == 21) {
+                            game.updateAccount(1);
+                            channel.sendMessage("Blackjack! You won " + game.bet * 3 / 2 + " \uD83D\uDC1F !").queue();
+                            channel.removeReactionById(game.messageId, "\u261D").queue();
+                            channel.removeReactionById(game.messageId, "\u270B").queue();
+                            games.remove(user);
+                        }
                     });
-                    if (game.userScore == 21) {
-                        game.updateAccount(1);
-                        channel.sendMessage("Blackjack! You won " + game.bet * 3 / 2 + " \uD83D\uDC1F !").queue();
-                        channel.removeReactionById(game.messageId, "\u261D").queue();
-                        channel.removeReactionById(game.messageId, "\u270B").queue();
-                        games.remove(user);
-                    }
                 } else {
                     channel.sendMessage("You are already playing!").queue();
                 }
@@ -144,7 +144,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                 game.updateAccount(1);
                 channel.sendMessage("Winner! You won " + game.bet + " \uD83D\uDC1F !").queue();
             } else if (game.dealerScore == game.userScore) {
-                game.updateAccount(1);
+                game.updateAccount(0);
                 channel.sendMessage("Stand off! You get " + game.bet + " \uD83D\uDC1F back!").queue();
             } else {
                 game.updateAccount(2);
