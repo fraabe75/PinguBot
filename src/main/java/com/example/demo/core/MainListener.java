@@ -96,7 +96,7 @@ public class MainListener extends ListenerAdapter {
             }
         }
         switch (args[0]) {
-            case "start", "play", "new", "game", "p", "end", "terminate", "e" -> {
+            case "start", "play", "new", "game", "p", "end", "terminate", "e", "bet" -> {
                 String tmp = args[1];
                 args[1] = args[0];
                 args[0] = tmp;

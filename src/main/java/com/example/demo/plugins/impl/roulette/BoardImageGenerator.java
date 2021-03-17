@@ -7,9 +7,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class BoardImageGenerator {
-    private static final String FILE_PATH = "roulette_board_small.png";
+    private static final String FILE_PATH = "roulette/roulette_board_small.png";
     private static final double FILE_SCALE = 0.5;
     private static final int FIELD_OFFSET = (int) (10 * FILE_SCALE);
 
@@ -31,5 +32,9 @@ public class BoardImageGenerator {
             System.err.println(e.toString());
         }
         return null;
+    }
+
+    public static String getImageFileName() {
+        return Path.of(FILE_PATH).getFileName().toString();
     }
 }

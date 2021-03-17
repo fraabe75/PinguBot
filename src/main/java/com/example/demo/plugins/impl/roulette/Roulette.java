@@ -8,11 +8,8 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -111,9 +108,10 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                     channel.sendMessage("There is already a game in progress.")
                            .queue(m -> lastErrorMessageID = m.getIdLong());
                 }
-                printOrUpdateBoard(board, channel, () -> {});
+                printOrUpdateBoard(board, channel, () -> {
+                });
             }
-            case "bet", "set", "place" -> {
+            case "bet", "set", "place", "b" -> {
                 param = param.replace("bet", "")
                              .replace("set", "")
                              .replace("place", "")
@@ -180,7 +178,8 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         } else {
                             author.subFish(betAmount);
                             userRepository.saveAndFlush(author);
-                            printOrUpdateBoard(board, channel, () -> {});
+                            printOrUpdateBoard(board, channel, () -> {
+                            });
                         }
                     }
                 }
@@ -195,7 +194,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
     private void printOrUpdateBoard(RouletteBoard b, TextChannel ch, Runnable downstream) {
         EmbedBuilder builder = new EmbedBuilder();
-        builder.setImage("attachment://roulette_board.png");
+        builder.setImage("attachment://" + BoardImageGenerator.getImageFileName());
         builder.addField(b.getBetsRepr());
 
         int timeRemaining = b.getBetTimeRemaining();
@@ -207,7 +206,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
             builder.setFooter(
                     "s bet time remaining!",
                     "https://raw.githubusercontent.com/fraabe75/PinguBot/master/src/main/resources/" +
-                    "roulette_timer.gif?token=AH7UVGRKMKUL2VPBR24ANB3AKCRBQ"
+                    "roulette/roulette_timer.gif"
             );
         }
 
@@ -217,7 +216,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
         if (b.getUpdateMessage() < 0) {
             ch.sendMessage(builder.build())
-              .addFile(BoardImageGenerator.getImageFile(board), "roulette_board.png")
+              .addFile(BoardImageGenerator.getImageFile(board), BoardImageGenerator.getImageFileName())
               .queue(m -> {
                   b.setUpdateMessage(m.getIdLong());
                   downstream.run();
@@ -226,7 +225,8 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
             ch.retrieveMessageById(b.getUpdateMessage())
               .queue(oldMessage -> oldMessage.delete().queue(
                       oldMessageDelete -> ch.sendMessage(builder.build())
-                                            .addFile(BoardImageGenerator.getImageFile(board), "roulette_board.png")
+                                            .addFile(BoardImageGenerator.getImageFile(board),
+                                                    BoardImageGenerator.getImageFileName())
                                             .queue(m -> {
                                                 b.setUpdateMessage(m.getIdLong());
                                                 downstream.run();
@@ -235,5 +235,4 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
               );
         }
     }
-
 }

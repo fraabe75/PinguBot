@@ -1,6 +1,7 @@
 package com.example.demo.plugins.impl.roulette;
 
 import java.awt.*;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,7 +38,7 @@ interface RouletteField {
         getCurrentBets().keySet()
                    .stream()
                    .map(aLong -> colorMapping.get(aLong).getColor())
-                   .sorted()
+                   .sorted(Comparator.comparing(Color::toString))
                    .forEachOrdered(
                            color -> {
                                if (col.get() == 3) {
