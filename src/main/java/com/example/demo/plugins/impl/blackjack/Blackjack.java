@@ -57,7 +57,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                             break trycatch;
                         }
                         bet = Integer.parseInt(param.trim().split(" ")[1]);
-                        UserEntity player = userRepository.findById(Long.parseLong(user.getId())).get();
+                        UserEntity player = userRepository.findById(Long.parseLong(user.getId())).orElse(new UserEntity(user.getIdLong(), user.getName()));
                         if (bet < 0 || bet > player.getFish()) {
                             throw new Exception();
                         }
@@ -261,7 +261,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         }
 
         private void updateAccount(int result) {
-            UserEntity user = super.userRepository.findById(Long.parseLong(player.getId())).get();
+            UserEntity user = super.userRepository.findById(Long.parseLong(player.getId())).orElse(new UserEntity(player.getIdLong(), player.getName()));
             switch (result) {
                 //stand off
                 case 0 -> user.addFish(bet);

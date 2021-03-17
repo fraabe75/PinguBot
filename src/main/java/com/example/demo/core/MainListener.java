@@ -91,8 +91,8 @@ public class MainListener extends ListenerAdapter {
         switch (args[0]) {
             case "bp", "pb", "rp", "pr", "eb", "be" -> {
                 args[2] = args[1];
-                args[0] = args[0].substring(0, 1);
                 args[1] = args[0].substring(1);
+                args[0] = args[0].substring(0, 1);
             }
 
         }
