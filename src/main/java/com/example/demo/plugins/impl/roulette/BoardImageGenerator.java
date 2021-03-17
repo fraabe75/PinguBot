@@ -9,17 +9,18 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class BoardImageGenerator {
-    private static final String FILE_PATH = "roulette_board.png";
+    private static final String FILE_PATH = "roulette_board_small.png";
+    private static final double FILE_SCALE = 0.5;
+    private static final int FIELD_OFFSET = (int) (10 * FILE_SCALE);
 
     public static byte[] getImageFile(RouletteBoard board) {
         try {
             BufferedImage img = ImageIO.read(new ClassPathResource(FILE_PATH).getFile());
             Graphics graphics = img.getGraphics();
-            int width = img.getWidth();
-            int height = img.getHeight();
 
-            //graphics.setColor();
-            //graphics.fillOval(20, 120, 5, 5);
+            for (RouletteField field : board.getFields()) {
+                field.drawPlayerPieces(graphics, board.getPlayers(), FILE_SCALE, FIELD_OFFSET);
+            }
             graphics.dispose();
 
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();

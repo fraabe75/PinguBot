@@ -130,7 +130,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         if (!userIdList.subList(0, userList.size() <= 9 ? userList.size() - 1 : 9).contains(user.getUserId())) {
             StringBuilder positions = new StringBuilder("...\n");
             int startIndex = userIdList.indexOf(user.getUserId());
-            for (int i = startIndex - 2; i < userList.size() && i <= startIndex + 2; i++) {
+            for (int i = Math.max(startIndex - 2, 0); i < userList.size() && i <= startIndex + 2; i++) {
                 positions.append(i);
                 positions.append(". ");
                 if (i == startIndex) positions.append("*");

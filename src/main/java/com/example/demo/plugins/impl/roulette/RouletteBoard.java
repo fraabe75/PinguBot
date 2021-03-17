@@ -12,20 +12,11 @@ import java.util.stream.Collectors;
 
 class RouletteBoard {
 
-    // Color type for every number field, where the index is the actual board field number
-    private final Color[] colorTable = {
-            Color.GREEN, Color.RED, Color.BLACK, Color.RED, Color.BLACK, Color.RED, Color.BLACK, Color.RED,
-            Color.BLACK, Color.RED, Color.BLACK, Color.BLACK, Color.RED, Color.BLACK, Color.RED,
-            Color.BLACK, Color.RED, Color.BLACK, Color.RED, Color.RED, Color.BLACK, Color.RED, Color.BLACK,
-            Color.RED, Color.BLACK, Color.RED, Color.BLACK, Color.RED, Color.BLACK, Color.BLACK, Color.RED,
-            Color.BLACK, Color.RED, Color.BLACK, Color.RED, Color.BLACK, Color.RED
-    };
-
     private Stack<ColorEmotePair> colorEmoteMap;
     private final List<RouletteField> fields;
     private final Map<Long, UserColorEmoteTriple> players;
     private long updateMessage;
-    private boolean finished;
+    private boolean finished = false;
 
     // time for users to submit bets in milliseconds
     private int betTime = 60000;
@@ -57,7 +48,7 @@ class RouletteBoard {
     }
 
     private void fillPlayerColorStack() {
-        colorEmoteMap = new Stack<ColorEmotePair>();
+        colorEmoteMap = new Stack<>();
         colorEmoteMap.add(new ColorEmotePair(Color.BLACK, ":black_circle:"));
         colorEmoteMap.add(new ColorEmotePair(Color.WHITE, ":white_circle:"));
         colorEmoteMap.add(new ColorEmotePair(Color.RED, ":red_circle:"));
@@ -94,16 +85,25 @@ class RouletteBoard {
         return finished;
     }
 
-    public void setFinished(boolean finished) {
-        this.finished = finished;
+    public void setFinished() {
+        this.finished = true;
+        for (RouletteField field : fields) {
+            if (field.isSpecialField()) {
+                ((Field) field).clear();
+            }
+        }
     }
 
     public int getBetTimeRemaining() {
         return betTime;
     }
 
-    public Color[] getColorTable() {
-        return colorTable;
+    public List<RouletteField> getFields() {
+        return fields;
+    }
+
+    public Map<Long, UserColorEmoteTriple> getPlayers() {
+        return players;
     }
 
     public Long getUpdateMessage() {
@@ -150,18 +150,25 @@ class RouletteBoard {
                     }
             );
         }
-        userBets.forEach(
-                (uID, rltFields) -> betBuilder.append(players.get(uID).getUser().getUserName())
-                                              .append(": ")
-                                              .append(rltFields.stream()
-                                                               .map(rltField -> rltField.toString()
-                                                                                + " ("
-                                                                                + rltField.getCurrentBets().get(uID)
-                                                                                + ")")
-                                                               .collect(Collectors.joining(", ")))
+        userBets.forEach((uID, rltFields) ->
+                betBuilder.append(players.get(uID).getEmote())
+                          .append(" ")
+                          .append(players.get(uID).getUser().getUserName())
+                          .append(": ")
+                          .append(rltFields.stream()
+                                           .map(rltField -> rltField +
+                                                            " (" +
+                                                            rltField.getCurrentBets()
+                                                                    .get(uID) +
+                                                            ")"
+                                           )
+                                           .collect(Collectors.joining(", "))
+                          )
         );
 
-        if (betBuilder.toString().isBlank()) {
+        if (betBuilder.toString().
+
+                isBlank()) {
             if (betTime <= 0) {
                 betBuilder.append("No fish was placed on the board!");
             } else {
@@ -211,7 +218,7 @@ class RouletteBoard {
         }
         try {
             return switch ((Field) field) {
-                case BLACK, RED -> colorTable[rolledNumber] == Color.class.getField(field.toString()).get(null);
+                case BLACK, RED -> Number.COLOR_TABLE[rolledNumber] == Color.class.getField(field.toString()).get(null);
                 case EVEN -> rolledNumber % 2 == 0;
                 case ODD -> rolledNumber % 2 == 1;
                 case COL_1 -> rolledNumber % 3 == 1;

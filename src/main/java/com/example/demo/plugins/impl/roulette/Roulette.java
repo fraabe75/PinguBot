@@ -81,36 +81,37 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
             case "start", "play", "new", "game", "p" -> {
                 if (board == null || board.isFinished()) {
                     board = new RouletteBoard((b) -> {
-                        printOrUpdateBoard(b, channel);
-                        int rolledNumber = new Random().nextInt(37);
-                        channel.sendMessage(
-                                new EmbedBuilder().setTitle("Rolled Number: " + rolledNumber)
-                                                  .setColor(b.getColorTable()[rolledNumber])
-                                                  .build()
-                        ).queue();
+                        printOrUpdateBoard(b, channel, () -> {
+                            int rolledNumber = new Random().nextInt(37);
+                            channel.sendMessage(
+                                    new EmbedBuilder().setTitle("Rolled Number: " + rolledNumber)
+                                                      .setColor(Number.COLOR_TABLE[rolledNumber])
+                                                      .build()
+                            ).queue();
 
-                        EmbedBuilder builder = new EmbedBuilder();
-                        builder.setTitle("Payout");
-                        b.addPayoutPerUser(builder, rolledNumber)
-                         .forEach((key, value) -> {
-                             UserEntity author = userRepository.getOne(key);
-                             if (value > 0) {
-                                 author.addFish(value);
-                                 author.addMateability(1);
-                             } else {
-                                 author.subMateability(1);
-                             }
-                             userRepository.save(author);
-                         });
-                        userRepository.flush();
-                        b.setFinished(true);
-                        channel.sendMessage(builder.build()).queue();
+                            EmbedBuilder builder = new EmbedBuilder();
+                            builder.setTitle("Payout");
+                            b.addPayoutPerUser(builder, rolledNumber)
+                             .forEach((key, value) -> {
+                                 UserEntity author = userRepository.getOne(key);
+                                 if (value > 0) {
+                                     author.addFish(value);
+                                     author.addMateability(1);
+                                 } else {
+                                     author.subMateability(1);
+                                 }
+                                 userRepository.save(author);
+                             });
+                            userRepository.flush();
+                            b.setFinished();
+                            channel.sendMessage(builder.build()).queue();
+                        });
                     });
                 } else {
                     channel.sendMessage("There is already a game in progress.")
                            .queue(m -> lastErrorMessageID = m.getIdLong());
                 }
-                printOrUpdateBoard(board, channel);
+                printOrUpdateBoard(board, channel, () -> {});
             }
             case "bet", "set", "place" -> {
                 param = param.replace("bet", "")
@@ -179,7 +180,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         } else {
                             author.subFish(betAmount);
                             userRepository.saveAndFlush(author);
-                            printOrUpdateBoard(board, channel);
+                            printOrUpdateBoard(board, channel, () -> {});
                         }
                     }
                 }
@@ -192,7 +193,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
         return true;
     }
 
-    private void printOrUpdateBoard(RouletteBoard b, TextChannel ch) {
+    private void printOrUpdateBoard(RouletteBoard b, TextChannel ch, Runnable downstream) {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setImage("attachment://roulette_board.png");
         builder.addField(b.getBetsRepr());
@@ -217,13 +218,19 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
         if (b.getUpdateMessage() < 0) {
             ch.sendMessage(builder.build())
               .addFile(BoardImageGenerator.getImageFile(board), "roulette_board.png")
-              .queue(m -> b.setUpdateMessage(m.getIdLong()));
+              .queue(m -> {
+                  b.setUpdateMessage(m.getIdLong());
+                  downstream.run();
+              });
         } else {
             ch.retrieveMessageById(b.getUpdateMessage())
               .queue(oldMessage -> oldMessage.delete().queue(
                       oldMessageDelete -> ch.sendMessage(builder.build())
                                             .addFile(BoardImageGenerator.getImageFile(board), "roulette_board.png")
-                                            .queue(m -> b.setUpdateMessage(m.getIdLong()))
+                                            .queue(m -> {
+                                                b.setUpdateMessage(m.getIdLong());
+                                                downstream.run();
+                                            })
                       )
               );
         }

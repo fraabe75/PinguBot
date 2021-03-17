@@ -32,7 +32,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
     public static MessageEmbed help() {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Blackjack Help");
-        builder.setDescription("Las Vegas is the only place I know\nwhere money really talks. It says goodbye.\n~ Frank Sinatra");
+        builder.setDescription(
+                "Las Vegas is the only place I know\nwhere money really talks. It says goodbye.\n~ Frank Sinatra");
         builder.addField("blackjack play <value>", "start a new game", false);
         builder.addField("blackjack end", "end the current game", false);
         builder.addField("blackjack rules", "rules and payout rates", false);
@@ -57,7 +58,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                             break trycatch;
                         }
                         bet = Integer.parseInt(param.trim().split(" ")[1]);
-                        UserEntity player = userRepository.findById(Long.parseLong(user.getId())).orElse(new UserEntity(user.getIdLong(), user.getName()));
+                        UserEntity player = userRepository.findById(user.getIdLong())
+                                                          .orElse(new UserEntity(user.getIdLong(), user.getName()));
                         if (bet < 0 || bet > player.getFish()) {
                             throw new Exception();
                         }
@@ -112,7 +114,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
     @Override
     public boolean guildMessageReactionAdd(GuildMessageReactionAddEvent event, String messageId) {
 
-        if (event.getUser().isBot() || !games.containsKey(event.getUser()) || !games.get(event.getUser()).messageId.equals(messageId)) {
+        if (event.getUser().isBot() || !games.containsKey(event.getUser()) ||
+            !games.get(event.getUser()).messageId.equals(messageId)) {
             return false;
         }
 
@@ -121,7 +124,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
 
         //hit
         if (event.getReactionEmote().getEmoji().equals("\u261D")) {
-            channel.editMessageById(game.messageId, game.hit(true)).queue(message -> message.removeReaction("\u261D", game.player).queue());
+            channel.editMessageById(game.messageId, game.hit(true))
+                   .queue(message -> message.removeReaction("\u261D", game.player).queue());
             if (game.userScore > 21) {
                 game.updateAccount(2);
                 channel.sendMessage("Bust! You unfortunately lost " + game.bet + " \uD83D\uDC1F !").queue();
@@ -134,7 +138,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
 
         //stand
         if (event.getReactionEmote().getEmoji().equals("\u270B")) {
-            channel.editMessageById(game.messageId, game.stand()).queue(message -> message.removeReaction("\u270B", game.player).queue());
+            channel.editMessageById(game.messageId, game.stand())
+                   .queue(message -> message.removeReaction("\u270B", game.player).queue());
             if (game.dealerScore > 21 || game.dealerScore < game.userScore) {
                 game.updateAccount(1);
                 channel.sendMessage("Winner! You won " + game.bet + " \uD83D\uDC1F !").queue();
@@ -196,9 +201,9 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             builder.setTitle("Blackjack");
             builder.setDescription("Player: " + member.getNickname() + "\nStakes: " + bet + " \uD83D\uDC1F");
             builder.addField("Cards of dealer:", "secret card\n" + dealerCards.get(1).getName()
-                    + "\n\nDealer score: " + dealerCards.get(1).getValue(), false);
+                                                 + "\n\nDealer score: " + dealerCards.get(1).getValue(), false);
             builder.addField("Your cards:", getCards(playerCards, newCard)
-                    + "\nYour score: " + calculateScore(true), false);
+                                            + "\nYour score: " + calculateScore(true), false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
             userScore = calculateScore(true);
             if (newCard) {
@@ -217,9 +222,9 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                 dealerScore = calculateScore(false);
             }
             builder.addField("Cards of dealer:", getCards(dealerCards, false)
-                    + "\nDealer score: " + dealerScore, false);
+                                                 + "\nDealer score: " + dealerScore, false);
             builder.addField("Your cards:", getCards(playerCards, false)
-                    + "\nYour score: " + userScore, false);
+                                            + "\nYour score: " + userScore, false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
             return builder.build();
         }
@@ -261,7 +266,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         }
 
         private void updateAccount(int result) {
-            UserEntity user = super.userRepository.findById(Long.parseLong(player.getId())).orElse(new UserEntity(player.getIdLong(), player.getName()));
+            UserEntity user = super.userRepository.findById(player.getIdLong())
+                                                  .orElse(new UserEntity(player.getIdLong(), player.getName()));
             switch (result) {
                 //stand off
                 case 0 -> user.addFish(bet);

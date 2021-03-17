@@ -94,7 +94,6 @@ public class MainListener extends ListenerAdapter {
                 args[1] = args[0].substring(1);
                 args[0] = args[0].substring(0, 1);
             }
-
         }
         switch (args[0]) {
             case "start", "play", "new", "game", "p", "end", "terminate", "e" -> {
@@ -105,7 +104,7 @@ public class MainListener extends ListenerAdapter {
         }
 
         String param = String.join(" ", args[1], args[2]).trim();
-
+        
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(args[0])) {
                 if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[0], param, prefix)) {
