@@ -1,5 +1,6 @@
 package com.example.demo.plugins.impl;
 
+import net.dv8tion.jda.api.entities.User;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +23,7 @@ public class RankClasses {
     public static class Rank {
         private String img;
         private int lvl;
-        private String de;
+        private int cost;
         private String en;
 
         public void setImg(String img) {
@@ -33,8 +34,8 @@ public class RankClasses {
             this.lvl = lvl;
         }
 
-        public void setDe(String de) {
-            this.de = de;
+        public void setCost(int cost) {
+            this.cost = cost;
         }
 
         public void setEn(String en) {
@@ -49,8 +50,8 @@ public class RankClasses {
             return lvl;
         }
 
-        public String getDe() {
-            return de;
+        public int getCost() {
+            return cost;
         }
 
         public String getEn() {

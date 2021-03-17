@@ -22,7 +22,6 @@ public class RankMapFromYamlIntegrationTest {
         assertEquals(rankClasses.getRankClasses().size(), 10);
         RankClasses.Rank testRank = rankClasses.getRankClasses().get("adelie");
         assertNotNull(testRank);
-        assertEquals(testRank.getDe(), "Adeliepinguin");
         assertEquals(testRank.getEn(), "Adelie");
         assertEquals(testRank.getLvl(), 5);
         assertEquals(testRank.getImg(), "src/main/resources/pingu_ranks/adelie.jpg");

@@ -7,16 +7,16 @@ import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +35,9 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                 "ranks",
                 "user",
                 "global",
-                "stats"
+                "stats",
+                "levelup",
+                "level"
         );
         this.userRepository = userRepository;
         this.rankClasses = rankClasses;
@@ -70,6 +72,9 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                 generateUserProfile(event.getChannel(), param, user);
             }
             case "global", "rank", "ranks", "stats" -> event.getChannel().sendMessage(globalRank(user)).queue();
+            case "level", "levelup" -> {
+                event.getChannel().sendMessage(level(userID)).queue();
+            }
             default -> event.getChannel().sendMessage(help()).queue();
         }
 
@@ -171,22 +176,60 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
     }
 
+    private String level(long userId) {
+        UserEntity user = userRepository.findById(userId).get();
+        //min. humboldt -> dynamic ranking
+        if(user.getRank().equals("humboldt")) {
+            return "You can only reach higher levels through a higher mateability!";
+        }
+        if(user.getRank().equals("emperor")) {
+            return "You are already the best penguin!";
+        }
+
+        RankClasses.Rank newRank = rankClasses.getRankClasses().entrySet()
+                .stream().filter(x -> x.getValue().getLvl()
+                        == rankClasses.getRankClasses().get(user.getRank()).getLvl() + 1)
+                .findFirst().get().getValue();
+
+        if(user.getFish() >= newRank.getCost()) {
+            user.subFish(newRank.getCost());
+            user.setRank(newRank.getEn());
+            userRepository.saveAndFlush(user);
+            return "Congratulations! You are now a " + newRank.getEn() + "!";
+        } else {
+            return "You don't have enough fish to grow!";
+        }
+    }
+
     private RankClasses.Rank getRank(UserEntity user) {
 
         Map<String, RankClasses.Rank> ranks = rankClasses.getRankClasses();
 
-        List<Long> userIDs = userRepository.findAll(Sort.by(Sort.Direction.ASC, "mateability"))
-                                           .stream().map(UserEntity::getUserId).collect(Collectors.toList());
-        if (userIDs.get(userIDs.size() - 1).equals(user.getUserId())) {
+        List<UserEntity> userList = new ArrayList<>(userRepository.findAll(
+                Sort.by(Sort.Direction.DESC, "mateability")));
+        Map<Long, Long> userMap = userRepository.findAll().stream()
+                .collect(Collectors.toMap(UserEntity::getUserId, UserEntity::getMateability));
+
+        //emperor
+        UserEntity emperor = userList.stream().filter(x -> x.getFish() >= ranks.get("emperor")
+                .getCost()).sorted().findFirst().orElse(userList.stream().findFirst().get());
+        if(user.getUserId().equals(emperor.getUserId())) {
             return ranks.get("emperor");
         }
-        int place = userIDs.indexOf(user.getUserId()) * 8 / (userIDs.size() - 1);
 
-        return ranks.entrySet()
+        if(user.getRank().equals("humboldt")) {
+            int place = userList.stream().map(UserEntity::getUserId).collect(Collectors.toList())
+                    .indexOf(user.getUserId()) * 8 / (userList.size() - 1);
+
+            return ranks.entrySet()
                     .stream()
                     .filter(stringRankEntry -> stringRankEntry.getValue().getLvl() == place)
                     .findAny()
                     .get()
                     .getValue();
+        } else {
+            return ranks.get(user.getRank());
+        }
+
     }
 }

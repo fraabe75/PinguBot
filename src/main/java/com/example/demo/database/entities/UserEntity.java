@@ -19,11 +19,14 @@ public class UserEntity {
     private long fish;
     private long mateability;
 
+    private String rank;
+
     public UserEntity(long userId, @NotNull String userName) {
         this.userId = userId;
         this.userName = userName.toLowerCase();
         this.fish = 0;
         this.mateability = 0;
+        this.rank = "fairy";
     }
 
     public UserEntity() {
@@ -60,5 +63,13 @@ public class UserEntity {
 
     public synchronized void subMateability(long toSub) {
         this.mateability = (this.mateability - toSub) < 0 ? 0 : this.mateability - toSub;
+    }
+
+    public String getRank() {
+        return rank;
+    }
+
+    public void setRank(String rank) {
+        this.rank = rank;
     }
 }
