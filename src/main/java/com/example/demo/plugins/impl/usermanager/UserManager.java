@@ -7,6 +7,7 @@ import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
@@ -25,20 +26,11 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         setName("User");
         setDescription("Displays userprofile stuff.");
         addCommands(
-                "score",
-                "mateability",
-                "elo",
-                "rank",
-                "ranks",
-                "user",
-                "global",
-                "stats",
-                "levelup",
-                "level",
-                "lvl",
-                "l",
-                "g",
-                "s"
+                "user", "u",
+                "score", "mateability", "elo", "s",
+                "global", "rank", "ranks", "stats", "g",
+                "levelup", "level", "lvl", "l",
+                "send", "transaction"
         );
         this.userRepository = userRepository;
         this.rankClasses = rankClasses.getRankClasses();
@@ -51,6 +43,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.addField("score <@username>", "display current stats", false);
         builder.addField("global", "display the global ranking", false);
         builder.addField("level", "eat fish to level up", false);
+        builder.addField("send <@username> <value>", "send fish to your friends", false);
         return builder.build();
     }
 
@@ -87,6 +80,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
         long userID = event.getAuthor().getIdLong();
+        TextChannel channel = event.getChannel();
         UserEntity user = UserEntity.getUserByIdLong(event.getMember(), event.getAuthor(), userRepository);
 
         switch (command) {
@@ -95,10 +89,36 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             }
             case "global", "rank", "ranks", "stats", "g" -> event.getChannel().sendMessage(globalRank(user)).queue();
             case "level", "levelup", "lvl", "l" -> {
-                event.getChannel().sendMessage(level(userID)).queue();
+                channel.sendMessage(level(userID)).queue();
                 generateUserProfile(event.getChannel(), "", user);
             }
-            default -> event.getChannel().sendMessage(help()).queue();
+            case "send", "transaction" -> {
+                try {
+                    UserEntity sender = userRepository.findById(userID).orElse(null);
+                    UserEntity receiver = null;
+                    long amount = Long.parseLong(param.split(" ")[1].trim());
+                    param = param.split(" ")[0].trim();
+                    if (param.matches("^<@!\\d+>$")) {
+                        long receiverID = Long.parseLong(param.substring(3, param.length() - 1));
+                        if (userRepository.existsById(receiverID)) {
+                            receiver = userRepository.findById(receiverID).orElse(null);
+                        }
+                    }
+                    if (sender != null && receiver != null && !sender.getUserId().equals(receiver.getUserId())) {
+                        if (transaction(sender, receiver, amount)) {
+                            channel.sendMessage("Transaction successful! Your new balance:").queue();
+                            generateUserProfile(channel, "", user);
+                        } else {
+                            throw new Exception();
+                        }
+                    } else {
+                        throw new Exception();
+                    }
+                } catch (Exception e) {
+                    channel.sendMessage("Transaction denied! Please try again.").queue();
+                }
+            }
+            default -> channel.sendMessage(help()).queue();
         }
 
         return true;
@@ -266,5 +286,20 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                     .findAny().get().getValue();
         }
         return rankClasses.get(user.getRank());
+    }
+
+    private synchronized boolean transaction(UserEntity sender, UserEntity receiver, long amount) {
+        try {
+            if (amount < 0 || amount > sender.getFish()) {
+                throw new Exception();
+            }
+            sender.subFish(amount);
+            receiver.addFish(amount);
+            userRepository.save(sender);
+            userRepository.saveAndFlush(receiver);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
