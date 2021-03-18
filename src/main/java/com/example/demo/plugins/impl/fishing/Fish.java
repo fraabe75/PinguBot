@@ -1,5 +1,6 @@
 package com.example.demo.plugins.impl.fishing;
 
+import com.example.demo.database.entities.UserEntity;
 import com.example.demo.database.repositories.UserRepository;
 import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
@@ -12,15 +13,25 @@ import net.dv8tion.jda.internal.requests.Route;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Service
 public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMessageReactionAddPlugin {
 
     private final UserRepository userRepository;
     private final List<Long> fishGames;
+    private final String[] emotes = {
+            "U+1F41F", // fish
+            "U+1F40B", // whale
+            "U+1F420", // tropical fish
+            "U+1F42C", // dolphin
+            "U+1F433", // whale 2
+            "U+1F4A7", // droplet
+            "U+1F30A", // ocean
+    };
 
     public Fish(UserRepository userRepository) {
         setName("Fish");
@@ -45,16 +56,38 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
     }
 
     @Override public boolean guildMessageReactionAdd(GuildMessageReactionAddEvent event, String messageId) {
+        TextChannel ch = event.getChannel();
+
         if (!event.getUser().isBot() && fishGames.contains(Long.parseLong(messageId))) {
-            event.getChannel()
-                 .removeReactionById(messageId, event.getReactionEmote().getEmoji(), event.getUser())
-                 .queue();
-            event.getChannel()
-                 .removeReactionById(messageId, event.getReactionEmote().getEmoji())
-                 .queue();
-            switch(event.getReactionEmote().getName()) {
-                case "\uD83D\uDC1F", "\uD83D\uDC20" -> System.out.println("Fish");
-                default -> System.out.println("no Fish!");
+            ch.clearReactionsById(messageId, event.getReactionEmote().getEmoji()).queue();
+
+            UserEntity user;
+            Member member = event.getGuild().getMember(event.getUser());
+            assert member != null;
+            if (!userRepository.existsById(member.getIdLong())) {
+                user = new UserEntity(member.getIdLong(), member.getUser().getName());
+            } else {
+                user = userRepository.getOne(event.getUser().getIdLong());
+            }
+
+            switch (event.getReactionEmote().getName()) {
+                case "\uD83D\uDC1F", "\uD83D\uDC20" -> {
+                    int fishNum = (int) (Math.random() * 3) + 1;
+                    ch.sendMessage(
+                            "+" +
+                            fishNum +
+                            " :fish: for " +
+                            (member.getNickname() == null ? member.getEffectiveName() : member.getNickname())
+                    ).complete();
+                    user.addFish(fishNum);
+                }
+                default -> {
+                    ch.sendMessage(
+                            "-1 :fish: for " +
+                            (member.getNickname() == null ? member.getEffectiveName() : member.getNickname())
+                    ).complete();
+                    user.subFish(1);
+                }
             }
             return true;
         }
@@ -62,42 +95,40 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
     }
 
     private void startFishingCompetition(TextChannel ch) {
-        List<String> emotes = new ArrayList<>();
-        emotes.add("U+1F41F"); // fish
-        emotes.add("U+1F40B"); // whale
-        emotes.add("U+1F420"); // tropical fish
-        emotes.add("U+1F42C"); // dolphin
-        emotes.add("U+1F4A7"); // droplet
-        emotes.add("U+1F30A"); // ocean
-        emotes.add("U+1F433"); // whale 2
-
         EmbedBuilder builder = new EmbedBuilder()
                 .setTitle("Time to go fishing!")
-                .setDescription("Click the fish emote. **Only the fish emote!**" +
-                                "\n\nBe careful, all non-fish reactions cost you a fish!");
+                .setDescription("""
+                                Click the fish emote. **Only the fish emote!**
+
+                                Be careful, all non-fish reactions cost you a fish!""");
 
         ch.sendMessage(builder.build())
           .queue(m -> {
-              fishGames.add(m.getIdLong());
-              long startTime = System.currentTimeMillis();
-              List<String> lastAdded = new LinkedList<>();
+              try {
+                  fishGames.add(m.getIdLong());
+                  long startTime = System.currentTimeMillis();
+                  List<String> localEmotes = Arrays.stream(emotes).collect(Collectors.toList());
 
-              while (!Thread.interrupted() && System.currentTimeMillis() - startTime < 10_000) {
-                  Collections.shuffle(lastAdded);
-                  lastAdded.subList(0, Math.min(3, lastAdded.size())).forEach(e -> m.removeReaction(e).queue());
+                  while (!Thread.interrupted() && System.currentTimeMillis() - startTime < 30_000) {
+                      Collections.shuffle(localEmotes);
+                      localEmotes.stream().limit(6).forEach(e -> {
+                          m.addReaction(e).queue();
+                      });
+                      Thread.sleep(5000);
 
-                  Collections.shuffle(emotes);
-                  emotes.stream().limit(4).forEach(e -> {
-                      m.addReaction(e).queue();
-                      lastAdded.add(e);
-                  });
-                  try {
-                      Thread.sleep(100);
-                  } catch (InterruptedException e) {
-                      e.printStackTrace();
+                      m.clearReactions().queue();
+                      Thread.sleep(500);
                   }
+                  m.clearReactions().queue();
+                  m.editMessage(
+                          new EmbedBuilder().setTitle("Fishing time is over!")
+                                            .setFooter("Start another fishing event with 'dp! fish'")
+                                            .build()
+                  ).queue();
+                  fishGames.remove(m.getIdLong());
+              } catch (InterruptedException e) {
+                  e.printStackTrace();
               }
-              fishGames.remove(m.getIdLong());
           });
     }
 }

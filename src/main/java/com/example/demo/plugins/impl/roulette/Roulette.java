@@ -140,8 +140,11 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         }
                         author = userRepository.getOne(authorID);
                         if (!board.addPlayer(author)) {
-                            channel.sendMessage("Reached player limit of 8 players,\nno more players can join.")
-                                   .queue();
+                            channel.sendMessage("Reached player limit of " +
+                                                board.maxColorPlayers() +
+                                                " players \n" +
+                                                "which can be displayed on the board")
+                                   .queue(m -> lastErrorMessageID = m.getIdLong());
                         }
                     } else {
                         author = userRepository.getOne(authorID);
@@ -178,8 +181,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         } else {
                             author.subFish(betAmount);
                             userRepository.saveAndFlush(author);
-                            printOrUpdateBoard(board, channel, () -> {
-                            });
+                            printOrUpdateBoard(board, channel, () -> {});
                         }
                     }
                 }
@@ -205,8 +207,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
             builder.setFooter(
                     "s bet time remaining!",
-                    "https://raw.githubusercontent.com/fraabe75/PinguBot/master/src/main/resources/" +
-                    "roulette/roulette_timer.gif"
+                    "https://media.giphy.com/media/Uc12D9PJloR40ALxwQ/source.gif"
             );
         }
 

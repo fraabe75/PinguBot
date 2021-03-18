@@ -35,7 +35,7 @@ class Number implements RouletteField {
         if (num_shift == -1) {
             upperX = 299;
             upperY = 37;
-            lowerX = 583;
+            lowerX = 400;
             lowerY = 96;
         } else {
             int col = num_shift % 3;
