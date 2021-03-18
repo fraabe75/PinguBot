@@ -199,7 +199,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         private MessageEmbed hit(Boolean newCard) {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Blackjack");
-            builder.setDescription("Player: " + member.getNickname() + "\nStakes: " + bet + " \uD83D\uDC1F");
+            builder.setDescription("Player: " + (member.getNickname() == null ? member.getEffectiveName() : member.getNickname()) + "\nStakes: " + bet + " \uD83D\uDC1F");
             builder.addField("Cards of dealer:", "secret card\n" + dealerCards.get(1).getName()
                                                  + "\n\nDealer score: " + dealerCards.get(1).getValue(), false);
             builder.addField("Your cards:", getCards(playerCards, newCard)
@@ -215,7 +215,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         private MessageEmbed stand() {
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Blackjack");
-            builder.setDescription("Player: " + member.getNickname() + "\nStakes: " + bet + " \uD83D\uDC1F");
+            builder.setDescription("Player: " + (member.getNickname() == null ? member.getEffectiveName() : member.getNickname()) + "\nStakes: " + bet + " \uD83D\uDC1F");
             dealerScore = calculateScore(false);
             while (dealerScore < 17) {
                 getCards(dealerCards, true);
