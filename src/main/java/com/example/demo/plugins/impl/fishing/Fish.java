@@ -41,6 +41,13 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
         this.fishGames = new ArrayList<>();
     }
 
+    public static MessageEmbed help() {
+        return new EmbedBuilder().setTitle("Petri Heil!")
+                                 .setDescription("You find yourself in the need of some more, delicious fish?")
+                                 .addField("fish", "start the fishing competition", false)
+                                 .build();
+    }
+
     @Override
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
         TextChannel channel = event.getChannel();

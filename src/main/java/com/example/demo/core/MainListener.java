@@ -5,11 +5,14 @@ import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
 import com.example.demo.plugins.impl.UserManager;
 import com.example.demo.plugins.impl.blackjack.Blackjack;
+import com.example.demo.plugins.impl.fishing.Fish;
 import com.example.demo.plugins.impl.roulette.Roulette;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildAvailableEvent;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -46,18 +49,6 @@ public class MainListener extends ListenerAdapter {
     }
 
     @Override
-    public void onGuildAvailable(@NotNull GuildAvailableEvent event) {
-        if (printWelcome) {
-            printWelcome = false;
-            event.getGuild().getTextChannels()
-                 .stream()
-                 .filter(channel -> channel.getName()
-                                           .matches(".*(penguin).*")
-                 ).forEach(channel -> channel.sendMessage(welcomeMessage()).queue());
-        }
-    }
-
-    @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
 
         if (event.getAuthor().isBot()) {
@@ -86,11 +77,17 @@ public class MainListener extends ListenerAdapter {
                         case "level", "lvl", "l" -> UserManager.helpLevel();
                         case "roulette", "rlt", "r" -> Roulette.help();
                         case "blackjack", "bj", "b" -> Blackjack.help();
+                        case "fish", "f" -> Fish.help();
                         case "welcome" -> welcomeMessage();
                         default -> {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
-                            builder.setDescription("Not just anybody?");
+                            builder.setDescription("""
+                            Not just anybody?
+                            
+                            For a general welcome message, type `dp! help welcome`
+                            """
+                            );
                             for (Plugin plugin : plugins) {
                                 if (!plugin.commands().contains("naughty")) {
                                     builder.addField(
