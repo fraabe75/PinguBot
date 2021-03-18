@@ -1,4 +1,4 @@
-package com.example.demo.plugins.impl;
+package com.example.demo.plugins.impl.usermanager;
 
 import net.dv8tion.jda.api.entities.User;
 import org.springframework.boot.context.properties.ConfigurationProperties;
