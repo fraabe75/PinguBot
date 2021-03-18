@@ -11,7 +11,6 @@ import com.example.demo.plugins.impl.roulette.Roulette;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.events.guild.GuildAvailableEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -31,8 +30,6 @@ public class MainListener extends ListenerAdapter {
     private final List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins;
     private final List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins;
 
-    private boolean printWelcome = true;
-
     public MainListener(List<Plugin> plugins, List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins,
                         List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins) {
         this.plugins = plugins;
@@ -44,18 +41,6 @@ public class MainListener extends ListenerAdapter {
     public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent event) {
         for (GuildMessageReactionAddPlugin guildMessageReactionAddPlugin : guildMessageReactionAddPlugins) {
             guildMessageReactionAddPlugin.guildMessageReactionAdd(event, event.getMessageId());
-        }
-    }
-
-    @Override
-    public void onGuildAvailable(@NotNull GuildAvailableEvent event) {
-        if (printWelcome) {
-            printWelcome = false;
-            event.getGuild().getTextChannels()
-                 .stream()
-                 .filter(channel -> channel.getName()
-                                           .matches(".*(penguin).*")
-                 ).forEach(channel -> channel.sendMessage(welcomeMessage()).queue());
         }
     }
 

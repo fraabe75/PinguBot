@@ -24,7 +24,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
     public UserManager(UserRepository userRepository, RankClasses rankClasses) {
         setName("User");
-        setDescription("Displays userprofile stuff");
+        setDescription("Displays userprofile stuff.");
         addCommands(
                 "score",
                 "mateability",

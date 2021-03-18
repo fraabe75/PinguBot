@@ -62,10 +62,13 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
         return true;
     }
 
-    @Override public boolean guildMessageReactionAdd(GuildMessageReactionAddEvent event, String messageId) {
+    @Override
+    public boolean guildMessageReactionAdd(GuildMessageReactionAddEvent event, String messageId) {
         TextChannel ch = event.getChannel();
 
-        if (!event.getUser().isBot() && fishGames.contains(Long.parseLong(messageId))) {
+        if (!event.getUser().isBot() &&
+            fishGames.contains(Long.parseLong(messageId)) &&
+            event.getReaction().retrieveUsers().stream().anyMatch(User::isBot)) {
             ch.clearReactionsById(messageId, event.getReactionEmote().getEmoji()).queue();
 
             UserEntity user;

@@ -35,15 +35,13 @@ public class Mia extends Plugin implements GuildMessageReceivedPlugin {
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
         TextChannel channel = event.getChannel();
-        User user = event.getAuthor();
-        Member member = event.getMember();
 
         switch (param.trim().split(" ")[0]) {
             case "start", "play", "new", "game", "p" -> {
 
                 long bet;
-                UserEntity player = userRepository.findById(user.getIdLong())
-                        .orElse(new UserEntity(user.getIdLong(), user.getName()));
+                UserEntity player = UserEntity.getUserByIdLong(event.getMember(), event.getAuthor(), userRepository);
+
                 try {
                     bet = Integer.parseInt(param.trim().split(" ")[1]);
                     if (bet < 0 || bet > player.getFish()) {
@@ -57,7 +55,7 @@ public class Mia extends Plugin implements GuildMessageReceivedPlugin {
 
                 EmbedBuilder builder = new EmbedBuilder();
                 builder.setTitle("Mia");
-                builder.setDescription("Player: " + (member.getNickname() == null ? member.getEffectiveName() : member.getNickname()) + "\nStakes: " + bet);
+                builder.setDescription("Player: " + player.getUserName() + "\nStakes: " + bet);
 
                 boolean running = true;
                 int miaPlayer = 1;
