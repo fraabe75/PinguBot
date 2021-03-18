@@ -1,8 +1,8 @@
-package com.example.demo.plugins.impl.userManager;
+package com.example.demo.plugins.impl;
 
-import com.example.demo.database.entities.UserEntity;
 import com.example.demo.database.repositories.UserRepository;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
+import com.example.demo.database.entities.UserEntity;
 import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -229,8 +229,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         Optional<Map.Entry<String, RankClasses.Rank>> newRank = rankClasses.entrySet()
-                                                                           .stream().filter(x -> x.getValue().getLvl() == rankClasses.get(user.getRank()).getLvl() + 1)
-                                                                           .findAny();
+                .stream().filter(x -> x.getValue().getLvl() == rankClasses.get(user.getRank()).getLvl() + 1)
+                .findAny();
         if (newRank.isEmpty()) {
             return "Database error!";
         }

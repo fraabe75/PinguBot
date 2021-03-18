@@ -3,7 +3,7 @@ package com.example.demo.core;
 import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
-import com.example.demo.plugins.impl.userManager.UserManager;
+import com.example.demo.plugins.impl.UserManager;
 import com.example.demo.plugins.impl.blackjack.Blackjack;
 import com.example.demo.plugins.impl.fishing.Fish;
 import com.example.demo.plugins.impl.mia.Mia;

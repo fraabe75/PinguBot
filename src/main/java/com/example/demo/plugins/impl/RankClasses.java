@@ -1,5 +1,6 @@
-package com.example.demo.plugins.impl.userManager;
+package com.example.demo.plugins.impl;
 
+import net.dv8tion.jda.api.entities.User;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
