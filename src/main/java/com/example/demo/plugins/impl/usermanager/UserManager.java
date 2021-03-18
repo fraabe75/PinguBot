@@ -1,4 +1,4 @@
-package com.example.demo.plugins.impl;
+package com.example.demo.plugins.impl.usermanager;
 
 import com.example.demo.database.repositories.UserRepository;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
