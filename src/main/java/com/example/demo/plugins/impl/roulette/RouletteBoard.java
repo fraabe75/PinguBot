@@ -187,7 +187,7 @@ class RouletteBoard {
         fields.forEach(field -> field.getCurrentBets().forEach(
                 (uID, betAmount) -> userPayoutMap.merge(
                         uID,
-                        (isPayoutField(field, rolledNumber) ? field.calculatePayout(betAmount) : 0),
+                        -betAmount + (isPayoutField(field, rolledNumber) ? field.calculatePayout(betAmount) : 0),
                         Long::sum
                 ))
         );
@@ -207,7 +207,12 @@ class RouletteBoard {
                     "https://media1.tenor.com/images/f240426d58c969c2da5bff787c0a0113/tenor.gif",
                     "https://media1.tenor.com/images/eafc3eb70afa2cd617dc0ff940f47131/tenor.gif",
                     "https://media.giphy.com/media/l2SpO2558KNLdARcQ/source.gif",
-                    "https://media.giphy.com/media/l2SpNj080EmduKVEs/source.gif"
+                    "https://media.giphy.com/media/l2SpNj080EmduKVEs/source.gif",
+                    "https://media.giphy.com/media/11StaZ9Lj74oCY/source.gif",
+                    "https://media.giphy.com/media/gbjAtqpO716Hm/source.gif",
+                    "https://media.giphy.com/media/l3cAg07WMsXD2/source.gif",
+                    "https://media.giphy.com/media/VkMV9TldsPd28/source.gif",
+                    "https://media.giphy.com/media/aqQsmtq6J2L16/source.gif"
             };
             if (new Random().nextInt(10) == 1) {
                 builder.setImage(inspirationalGIFS[new Random().nextInt(inspirationalGIFS.length)]);

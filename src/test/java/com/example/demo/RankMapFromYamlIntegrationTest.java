@@ -1,6 +1,6 @@
 package com.example.demo;
 
-import com.example.demo.plugins.impl.RankClasses;
+import com.example.demo.plugins.impl.userManager.RankClasses;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

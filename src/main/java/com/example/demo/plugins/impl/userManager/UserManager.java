@@ -1,4 +1,4 @@
-package com.example.demo.plugins.impl;
+package com.example.demo.plugins.impl.userManager;
 
 import com.example.demo.database.repositories.UserRepository;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,7 +38,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                 "lvl",
                 "l",
                 "g",
-                "s"
+                "s",
+                "u"
         );
         this.userRepository = userRepository;
         this.rankClasses = rankClasses.getRankClasses();
@@ -109,16 +109,17 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         if (param.isBlank() || param.equalsIgnoreCase("self")) {
             sendUserProfileEmbed(user, channel);
         } else {
-            param = param.replace("@", "");
             UserEntity foundMember = null;
 
-            if (param.matches("^<!\\d+>$")) {
+            if (param.matches("^<@!\\d+>$")) {
                 long userID = Long.parseLong(param.substring(2, param.length() - 1));
                 if (userRepository.existsById(userID)) {
                     foundMember = userRepository.getOne(userID);
                 }
             } else {
-                String proposedName = param.substring(0, param.contains("#") ? param.indexOf("#") : param.length());
+                String proposedName =
+                        param.substring(0, param.contains("#") ? param.indexOf("#") : param.length())
+                             .replace("@", "");
                 foundMember = userRepository.findAll()
                         .stream()
                         .filter(u -> u.getUserName().equalsIgnoreCase(proposedName))
