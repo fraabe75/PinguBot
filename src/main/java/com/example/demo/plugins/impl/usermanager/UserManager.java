@@ -1,6 +1,5 @@
 package com.example.demo.plugins.impl.usermanager;
 
-import com.example.demo.database.entities.UserEntity;
 import com.example.demo.database.repositories.UserRepository;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.database.entities.UserEntity;
@@ -8,6 +7,7 @@ import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
