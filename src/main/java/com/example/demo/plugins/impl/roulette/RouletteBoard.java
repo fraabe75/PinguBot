@@ -49,13 +49,13 @@ class RouletteBoard {
 
     private void fillPlayerColorStack() {
         colorEmoteMap = new Stack<>();
-        colorEmoteMap.add(new ColorEmotePair(Color.BLACK, ":black_circle:"));
+        //colorEmoteMap.add(new ColorEmotePair(Color.BLACK, ":black_circle:"));
         colorEmoteMap.add(new ColorEmotePair(Color.WHITE, ":white_circle:"));
         colorEmoteMap.add(new ColorEmotePair(Color.RED, ":red_circle:"));
         colorEmoteMap.add(new ColorEmotePair(Color.BLUE, ":blue_circle:"));
         colorEmoteMap.add(new ColorEmotePair(Color.getHSBColor(40, 100, 40), ":brown_circle:"));
-        colorEmoteMap.add(new ColorEmotePair(Color.MAGENTA, ":magenta_circle:"));
-        colorEmoteMap.add(new ColorEmotePair(Color.YELLOW, ":yellow_circle:"));
+        colorEmoteMap.add(new ColorEmotePair(Color.MAGENTA, ":purple_circle:"));
+        //colorEmoteMap.add(new ColorEmotePair(Color.YELLOW, ":yellow_circle:"));
         colorEmoteMap.add(new ColorEmotePair(Color.ORANGE, ":orange_circle:"));
     }
 
@@ -98,6 +98,10 @@ class RouletteBoard {
         return betTime;
     }
 
+    public int maxColorPlayers() {
+        return 6;
+    }
+
     public List<RouletteField> getFields() {
         return fields;
     }
@@ -116,6 +120,7 @@ class RouletteBoard {
 
     public boolean addPlayer(UserEntity player) {
         if (colorEmoteMap.isEmpty()) {
+            players.put(player.getUserId(), new UserColorEmoteTriple(player, null, ""));
             return false;
         }
         ColorEmotePair color = colorEmoteMap.pop();
@@ -164,11 +169,10 @@ class RouletteBoard {
                                            )
                                            .collect(Collectors.joining(", "))
                           )
+                          .append("\n")
         );
 
-        if (betBuilder.toString().
-
-                isBlank()) {
+        if (betBuilder.toString().isBlank()) {
             if (betTime <= 0) {
                 betBuilder.append("No fish was placed on the board!");
             } else {
@@ -183,14 +187,14 @@ class RouletteBoard {
         fields.forEach(field -> field.getCurrentBets().forEach(
                 (uID, betAmount) -> userPayoutMap.merge(
                         uID,
-                        -betAmount + (isPayoutField(field, rolledNumber) ? field.calculatePayout(betAmount) : 0),
+                        (isPayoutField(field, rolledNumber) ? field.calculatePayout(betAmount) : 0),
                         Long::sum
                 ))
         );
         userPayoutMap.forEach((uID, investReturn) -> builder.addField(
                 players.get(uID).getUser().getUserName(),
-                investReturn + " :fish: " + (investReturn > 0 ? " (+1 Mateability)" : ""),
-                true)
+                investReturn + " :fish: (" + (investReturn > 0 ? "+" : "-") + "1 Mateability)",
+                false)
         );
         if (userPayoutMap.isEmpty()) {
             builder.setDescription("No fish was thrown on the board,\nso there won't be any payout!");
