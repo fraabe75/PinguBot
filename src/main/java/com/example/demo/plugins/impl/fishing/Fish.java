@@ -62,9 +62,12 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
             ch.clearReactionsById(messageId, event.getReactionEmote().getEmoji()).queue();
 
             UserEntity user;
-            Member member = event.getGuild().getMember(event.getUser());
-            assert member != null;
-            user = UserEntity.getUserByIdLong(member.getIdLong(), userRepository, member);
+            user = UserEntity.getUserByIdLong(
+                    event.getGuild().getMember(event.getUser()),
+                    event.getUser(),
+                    userRepository
+            );
+            String memberName = user.getUserName();
 
             switch (event.getReactionEmote().getName()) {
                 case "\uD83D\uDC1F", "\uD83D\uDC20" -> {
@@ -73,14 +76,14 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                             "+" +
                             fishNum +
                             " :fish: for " +
-                            (member.getNickname() == null ? member.getEffectiveName() : member.getNickname())
+                            memberName
                     ).complete();
                     user.addFish(fishNum);
                 }
                 default -> {
                     ch.sendMessage(
                             "-1 :fish: for " +
-                            (member.getNickname() == null ? member.getEffectiveName() : member.getNickname())
+                            memberName
                     ).complete();
                     user.subFish(1);
                 }
@@ -102,10 +105,9 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
           .queue(m -> {
               try {
                   fishGames.add(m.getIdLong());
-                  long startTime = System.currentTimeMillis();
                   List<String> localEmotes = Arrays.stream(emotes).collect(Collectors.toList());
 
-                  while (!Thread.interrupted() && System.currentTimeMillis() - startTime < 30_000) {
+                  for (int i = 0; i < 8; i++) {
                       Collections.shuffle(localEmotes);
                       localEmotes.stream().limit(6).forEach(e -> {
                           m.addReaction(e).queue();

@@ -88,7 +88,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
         long userID = event.getAuthor().getIdLong();
-        UserEntity user = UserEntity.getUserByIdLong(userID, userRepository, Objects.requireNonNull(event.getMember()));
+        UserEntity user = UserEntity.getUserByIdLong(event.getMember(), event.getAuthor(), userRepository);
 
         switch (command) {
             case "score", "elo", "mateability", "s" -> {

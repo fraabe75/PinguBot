@@ -91,11 +91,7 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                             builder.setTitle("Payout");
                             b.addPayoutPerUser(builder, rolledNumber)
                              .forEach((key, value) -> {
-                                 UserEntity author = UserEntity.getUserByIdLong(
-                                         key,
-                                         userRepository,
-                                         Objects.requireNonNull(event.getMember())
-                                 );
+                                 UserEntity author = userRepository.getOne(key);
                                  if (value > 0) {
                                      author.addFish(value);
                                      author.addMateability(1);
@@ -144,9 +140,9 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                             );
                         }
                         author = UserEntity.getUserByIdLong(
-                                authorID,
-                                userRepository,
-                                Objects.requireNonNull(event.getMember())
+                                event.getMember(),
+                                event.getAuthor(),
+                                userRepository
                         );
                         if (!board.addPlayer(author)) {
                             channel.sendMessage("Reached player limit of " +
@@ -157,9 +153,9 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         }
                     } else {
                         author = UserEntity.getUserByIdLong(
-                                authorID,
-                                userRepository,
-                                Objects.requireNonNull(event.getMember())
+                                event.getMember(),
+                                event.getAuthor(),
+                                userRepository
                         );
                     }
                     String betField = param.trim().split(" ")[0];
@@ -194,7 +190,8 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         } else {
                             author.subFish(betAmount);
                             userRepository.saveAndFlush(author);
-                            printOrUpdateBoard(board, channel, () -> {});
+                            printOrUpdateBoard(board, channel, () -> {
+                            });
                         }
                     }
                 }
