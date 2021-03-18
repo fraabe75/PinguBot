@@ -205,28 +205,24 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
         Map<String, RankClasses.Rank> ranks = rankClasses.getRankClasses();
 
-        List<UserEntity> userList = new ArrayList<>(userRepository.findAll(
-                Sort.by(Sort.Direction.DESC, "mateability")));
+        List<UserEntity> dynamicUserList = userRepository.findAll()
+                .stream().filter(x -> x.getRank().equals("dynamic"))
+                .sorted(Comparator.comparingLong(UserEntity::getMateability))
+                .collect(Collectors.toList());
         Map<Long, Long> userMap = userRepository.findAll().stream()
                 .collect(Collectors.toMap(UserEntity::getUserId, UserEntity::getMateability));
 
-        //emperor
-        UserEntity emperor = userList.stream().filter(x -> x.getFish() >= ranks.get("emperor")
-                .getCost()).sorted().findFirst().orElse(userList.stream().findFirst().get());
-        if(user.getUserId().equals(emperor.getUserId())) {
-            return ranks.get("emperor");
-        }
-
         if(user.getRank().equals("humboldt")) {
-            int place = userList.stream().map(UserEntity::getUserId).collect(Collectors.toList())
-                    .indexOf(user.getUserId()) * 8 / (userList.size() - 1);
-
-            return ranks.entrySet()
-                    .stream()
-                    .filter(stringRankEntry -> stringRankEntry.getValue().getLvl() == place)
-                    .findAny()
-                    .get()
-                    .getValue();
+            //emperor
+            UserEntity emperor = dynamicUserList.stream().findFirst().get();
+            if(emperor.getUserId() != null && user.getUserId().equals(emperor.getUserId())) {
+                return ranks.get("emperor");
+            }
+            //dynamic ranks
+            int place = dynamicUserList.indexOf(user) * 8 / dynamicUserList.size();
+            return ranks.entrySet().stream()
+                    .filter(stringRankEntry -> (stringRankEntry.getValue().getLvl() - 11) * (-1) == place)
+                    .findAny().get().getValue();
         } else {
             return ranks.get(user.getRank());
         }
