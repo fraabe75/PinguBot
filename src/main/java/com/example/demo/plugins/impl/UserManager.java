@@ -159,7 +159,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
         StringBuilder topTen = new StringBuilder();
         for (int i = 0; i < userList.size() && i < 10; i++) {
-            topTen.append(i);
+            topTen.append(i + 1);
             topTen.append(". ");
             topTen.append(userList.get(i).getUserName());
             topTen.append(" - ");
@@ -172,7 +172,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             StringBuilder positions = new StringBuilder("...\n");
             int startIndex = userIdList.indexOf(user.getUserId());
             for (int i = Math.max(startIndex - 2, 0); i < userList.size() && i <= startIndex + 2; i++) {
-                positions.append(i);
+                positions.append(i + 1);
                 positions.append(". ");
                 if (i == startIndex) positions.append("*");
                 positions.append(userList.get(i).getUserName());

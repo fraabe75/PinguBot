@@ -2,6 +2,7 @@ package com.example.demo.core;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +23,7 @@ public class Core {
                 GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MESSAGE_REACTIONS, GatewayIntent.GUILD_VOICE_STATES
         );
 
-        return JDABuilder.create(token, intents)
+        return JDABuilder.create(token, intents).setActivity(Activity.listening("dp! help"))
                          .addEventListeners(mainListener)
                          .build();
     }
