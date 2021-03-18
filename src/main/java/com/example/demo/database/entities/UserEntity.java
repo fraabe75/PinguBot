@@ -48,6 +48,7 @@ public class UserEntity {
                 user.setUserName(memberName);
             }
         }
+        userRep.saveAndFlush(user);
         return user;
     }
 
