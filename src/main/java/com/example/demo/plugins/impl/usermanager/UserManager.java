@@ -26,21 +26,10 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         setName("User");
         setDescription("Displays userprofile stuff.");
         addCommands(
-                "score",
-                "mateability",
-                "elo",
-                "rank",
-                "ranks",
-                "user",
-                "global",
-                "stats",
-                "levelup",
-                "level",
-                "lvl",
-                "l",
-                "g",
-                "s",
-                "u"
+                "user", "u",
+                "score", "mateability", "elo", "s",
+                "global", "stats", "rank", "ranks", " g",
+                "levelup", "level", "lvl", "l"
         );
         this.userRepository = userRepository;
         this.rankClasses = rankClasses.getRankClasses();
