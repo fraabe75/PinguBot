@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 @Service
 public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private final UserRepository userRepository;
-    private final RankClasses rankClasses;
+    private final Map<String, RankClasses.Rank> rankClasses;
 
     public UserManager(UserRepository userRepository, RankClasses rankClasses) {
         setName("User");
@@ -38,10 +38,14 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                 "global",
                 "stats",
                 "levelup",
-                "level"
+                "level",
+                "lvl",
+                "l",
+                "g",
+                "s"
         );
         this.userRepository = userRepository;
-        this.rankClasses = rankClasses;
+        this.rankClasses = rankClasses.getRankClasses();
     }
 
     public static MessageEmbed help() {
@@ -50,6 +54,36 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setDescription("UserManager here, how may I help you?");
         builder.addField("score <@username>", "display current stats", false);
         builder.addField("global", "display the global ranking", false);
+        builder.addField("level", "eat fish to level up", false);
+        return builder.build();
+    }
+
+    public static MessageEmbed helpLevel() {
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.setTitle("Level Help");
+        builder.setDescription("""
+                Eat fish to grow and level up!
+                When you become a Humboldt penguin,
+                your rank will be determined dynamically
+                regarding the other penguins in the colony.
+                Get the highest mateability to become the emperor!\s""");
+        //update prizes from application.properties
+        builder.addField("Baby: Fairy penguin", "You need 100 fish to level up!", false);
+        builder.addField("0: Galapagos penguin", "You need 200 fish to level up!", false);
+        builder.addField("1: Fjordland penguin", "You need 300 fish to level up!", false);
+        builder.addField("2: Rockhopper penguin", "You need 500 fish to level up!", false);
+        builder.addField("3: Snares penguin", "You need 1000 fish to level up!", false);
+        builder.addField("4: Humboldt penguin", "meet me in the Munich zoo", false);
+        builder.addField("5: Macaroni penguin", "Macaroni's can hop as well hop as waddle", false);
+        builder.addField("6: Magellanic penguin", "visit me on the Falkland Islands", false);
+        builder.addField("7: Adelie penguin", "we waddle around about 1.5 mph", false);
+        builder.addField("8: Gentoo penguin", "maybe you should try gentoo linux", false);
+        builder.addField("9: Yelloweyed penguin", "yelloweyed penguins are the fourth longest penguins", false);
+        builder.addField("10: Royal penguin", "royal blood flows through your veins now", false);
+        builder.addField("11: King penguin", "only a few steps away from the throne", false);
+        builder.addField("12: Emperor penguin", "the one and only champion", false);
+        builder.setImage("https://i.redd.it/eyymtmpph1u01.jpg");
+        builder.setFooter("Find the global rank with: 'dp! global'");
         return builder.build();
     }
 
@@ -69,12 +103,13 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         switch (command) {
-            case "score", "elo", "mateability" -> {
+            case "score", "elo", "mateability", "s" -> {
                 generateUserProfile(event.getChannel(), param, user);
             }
-            case "global", "rank", "ranks", "stats" -> event.getChannel().sendMessage(globalRank(user)).queue();
-            case "level", "levelup" -> {
+            case "global", "rank", "ranks", "stats", "g" -> event.getChannel().sendMessage(globalRank(user)).queue();
+            case "level", "levelup", "lvl", "l" -> {
                 event.getChannel().sendMessage(level(userID)).queue();
+                generateUserProfile(event.getChannel(), "", user);
             }
             default -> event.getChannel().sendMessage(help()).queue();
         }
@@ -180,23 +215,31 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private String level(long userId) {
         UserEntity user = userRepository.findById(userId).get();
         //min. humboldt -> dynamic ranking
-        if(user.getRank().equals("humboldt")) {
+        if(getRank(user).getEn().equals("Emperor penguin")) {
+            return "You are already the greatest penguin of all time!";
+        }
+        if(user.getRank().equals("dynamic")) {
             return "You can only reach higher levels through a higher mateability!";
         }
-        if(user.getRank().equals("emperor")) {
-            return "You are already the best penguin!";
+
+        Optional<Map.Entry<String, RankClasses.Rank>> newRank = rankClasses.entrySet()
+                .stream().filter(x -> x.getValue().getLvl() == rankClasses.get(user.getRank()).getLvl() + 1)
+                .findAny();
+        if(newRank.isEmpty()) {
+            return "Database error!";
         }
 
-        RankClasses.Rank newRank = rankClasses.getRankClasses().entrySet()
-                .stream().filter(x -> x.getValue().getLvl()
-                        == rankClasses.getRankClasses().get(user.getRank()).getLvl() + 1)
-                .findFirst().get().getValue();
-
-        if(user.getFish() >= newRank.getCost()) {
-            user.subFish(newRank.getCost());
-            user.setRank(newRank.getEn());
-            userRepository.saveAndFlush(user);
-            return "Congratulations! You are now a " + newRank.getEn() + "!";
+        if(user.getFish() >= newRank.get().getValue().getCost()) {
+            user.subFish(newRank.get().getValue().getCost());
+            if(newRank.get().getKey().equals("humboldt")) {
+                user.setRank("dynamic");
+                userRepository.saveAndFlush(user);
+                return "Congratulations! You are now part of the dynamic rank system!";
+            } else {
+                user.setRank(newRank.get().getKey());
+                userRepository.saveAndFlush(user);
+                return "Congratulations! You reached the next level!";
+            }
         } else {
             return "You don't have enough fish to grow!";
         }
@@ -204,29 +247,20 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
     private RankClasses.Rank getRank(UserEntity user) {
 
-        Map<String, RankClasses.Rank> ranks = rankClasses.getRankClasses();
+        List<Long> dynamicUserList = new ArrayList<>(userRepository.findAllByRankDynamic());
 
-        List<UserEntity> dynamicUserList = userRepository.findAll()
-                .stream().filter(x -> x.getRank().equals("dynamic"))
-                .sorted(Comparator.comparingLong(UserEntity::getMateability))
-                .collect(Collectors.toList());
-        Map<Long, Long> userMap = userRepository.findAll().stream()
-                .collect(Collectors.toMap(UserEntity::getUserId, UserEntity::getMateability));
-
-        if(user.getRank().equals("humboldt")) {
+        if(user.getRank().equals("dynamic")) {
             //emperor
-            UserEntity emperor = dynamicUserList.stream().findFirst().get();
-            if(emperor.getUserId() != null && user.getUserId().equals(emperor.getUserId())) {
-                return ranks.get("emperor");
+            UserEntity emperor = userRepository.findById(dynamicUserList.stream().findFirst().get()).orElse(null);
+            if(emperor != null && user.getUserId().equals(emperor.getUserId())) {
+                return rankClasses.get("emperor");
             }
             //dynamic ranks
-            int place = dynamicUserList.indexOf(user) * 8 / dynamicUserList.size();
-            return ranks.entrySet().stream()
+            int place = dynamicUserList.indexOf(user.getUserId()) * 8 / dynamicUserList.size();
+            return rankClasses.entrySet().stream()
                     .filter(stringRankEntry -> (stringRankEntry.getValue().getLvl() - 11) * (-1) == place)
                     .findAny().get().getValue();
-        } else {
-            return ranks.get(user.getRank());
         }
-
+        return rankClasses.get(user.getRank());
     }
 }

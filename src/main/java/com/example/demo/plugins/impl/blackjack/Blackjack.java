@@ -51,12 +51,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         switch (param.trim().split(" ")[0]) {
             case "start", "play", "new", "game", "p" -> {
                 if (!games.containsKey(user)) {
-                    long bet = 0;
-                    trycatch:
+                    long bet;
                     try {
-                        if (param.trim().split(" ").length == 1) {
-                            break trycatch;
-                        }
                         bet = Integer.parseInt(param.trim().split(" ")[1]);
                         UserEntity player = userRepository.findById(user.getIdLong())
                                                           .orElse(new UserEntity(user.getIdLong(), user.getName()));

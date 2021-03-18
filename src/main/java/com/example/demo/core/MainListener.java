@@ -64,10 +64,11 @@ public class MainListener extends ListenerAdapter {
                 args.length < 3 ? "" : args[2]
         };
 
-        if (args[0].equals("help") || args[0].equals("")) {
+        if (args[0].equals("help") || args[0].equals("h") || args[0].equals("")) {
             event.getChannel().sendMessage(
                     switch (args[1]) {
                         case "usermanager", "user", "u" -> UserManager.help();
+                        case "level", "lvl", "l" -> UserManager.helpLevel();
                         case "roulette", "rlt", "r" -> Roulette.help();
                         case "blackjack", "bj", "b" -> Blackjack.help();
                         default -> {
@@ -89,7 +90,7 @@ public class MainListener extends ListenerAdapter {
         }
 
         switch (args[0]) {
-            case "bp", "pb", "rp", "pr", "eb", "be" -> {
+            case "bp", "pb", "rp", "pr", "eb", "be", "rb", "br" -> {
                 args[2] = args[1];
                 args[1] = args[0].substring(1);
                 args[0] = args[0].substring(0, 1);
