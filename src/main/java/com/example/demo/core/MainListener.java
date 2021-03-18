@@ -6,13 +6,12 @@ import com.example.demo.plugins.Plugin;
 import com.example.demo.plugins.impl.UserManager;
 import com.example.demo.plugins.impl.blackjack.Blackjack;
 import com.example.demo.plugins.impl.fishing.Fish;
+import com.example.demo.plugins.impl.mia.Mia;
 import com.example.demo.plugins.impl.roulette.Roulette;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.guild.GuildAvailableEvent;
-import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
-import net.dv8tion.jda.api.events.guild.GuildReadyEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -49,6 +48,18 @@ public class MainListener extends ListenerAdapter {
     }
 
     @Override
+    public void onGuildAvailable(@NotNull GuildAvailableEvent event) {
+        if (printWelcome) {
+            printWelcome = false;
+            event.getGuild().getTextChannels()
+                 .stream()
+                 .filter(channel -> channel.getName()
+                                           .matches(".*(penguin).*")
+                 ).forEach(channel -> channel.sendMessage(welcomeMessage()).queue());
+        }
+    }
+
+    @Override
     public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
 
         if (event.getAuthor().isBot()) {
@@ -70,6 +81,11 @@ public class MainListener extends ListenerAdapter {
                 args.length < 3 ? "" : args[2]
         };
 
+        if(args[0].equals("welcome")) {
+            channel.sendMessage(welcomeMessage()).queue();
+            return;
+        }
+
         if (args[0].equals("help") || args[0].equals("h") || args[0].equals("")) {
             event.getChannel().sendMessage(
                     switch (args[1]) {
@@ -78,16 +94,12 @@ public class MainListener extends ListenerAdapter {
                         case "roulette", "rlt", "r" -> Roulette.help();
                         case "blackjack", "bj", "b" -> Blackjack.help();
                         case "fish", "f" -> Fish.help();
-                        case "welcome" -> welcomeMessage();
+                        case "mia", "m" -> Mia.help();
                         default -> {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
-                            builder.setDescription("""
-                            Not just anybody?
-                            
-                            For a general welcome message, type `dp! help welcome`
-                            """
-                            );
+                            builder.setDescription("Not just anybody?");
+                            builder.addField("Welcome", "How to use the bot", false);
                             for (Plugin plugin : plugins) {
                                 if (!plugin.commands().contains("naughty")) {
                                     builder.addField(
@@ -104,7 +116,7 @@ public class MainListener extends ListenerAdapter {
         }
 
         switch (args[0]) {
-            case "bp", "pb", "rp", "pr", "eb", "be", "rb", "br" -> {
+            case "bp", "pb", "rp", "pr", "eb", "be", "rb", "br", "pm", "mp" -> {
                 args[2] = args[1];
                 args[1] = args[0].substring(1);
                 args[0] = args[0].substring(0, 1);
@@ -137,18 +149,19 @@ public class MainListener extends ListenerAdapter {
         builder.setDescription("""
                                Help page: `dp! help`
                                                            
-                               :fish: : fish is your daily money and 
-                               :penguin: : mateability is your social credit balance.
+                               :fish: : fish is your daily money 
+                               :penguin: : mateability is your social credit balance
                                                            
-                               Your main goal is to achieve the highest mateability score to become
-                               the emperor 
+                               Your main goal is to achieve the highest mateability
+                               to become the emperor!
                                                            
                                It gets higher the more games you win, but also decreases, if you loose!
                                `dp! score` and `dp! global` might be useful here..
                                                            
                                A higher mateability also increases your rank, **but**
-                               if you aren't a well known colony member (lower than Humboldt Penguin), 
-                               leveling up costs fish. 
+                               if you aren't a well known colony member
+                               (lower than Humboldt Penguin), leveling up costs fish. 
+                               
                                `dp! help lvl` gives you more information about social ranks.
                                """
         );
