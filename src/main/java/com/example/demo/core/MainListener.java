@@ -9,6 +9,7 @@ import com.example.demo.plugins.impl.roulette.Roulette;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.guild.GuildAvailableEvent;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -28,6 +29,8 @@ public class MainListener extends ListenerAdapter {
     private final List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins;
     private final List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins;
 
+    private boolean printWelcome = true;
+
     public MainListener(List<Plugin> plugins, List<GuildMessageReceivedPlugin> guildMessageReceivedPlugins,
                         List<GuildMessageReactionAddPlugin> guildMessageReactionAddPlugins) {
         this.plugins = plugins;
@@ -39,6 +42,18 @@ public class MainListener extends ListenerAdapter {
     public void onGuildMessageReactionAdd(@NotNull GuildMessageReactionAddEvent event) {
         for (GuildMessageReactionAddPlugin guildMessageReactionAddPlugin : guildMessageReactionAddPlugins) {
             guildMessageReactionAddPlugin.guildMessageReactionAdd(event, event.getMessageId());
+        }
+    }
+
+    @Override
+    public void onGuildAvailable(@NotNull GuildAvailableEvent event) {
+        if (printWelcome) {
+            printWelcome = false;
+            event.getGuild().getTextChannels()
+                 .stream()
+                 .filter(channel -> channel.getName()
+                                           .matches(".*(penguin).*")
+                 ).forEach(channel -> channel.sendMessage(welcomeMessage()).queue());
         }
     }
 
@@ -71,15 +86,17 @@ public class MainListener extends ListenerAdapter {
                         case "level", "lvl", "l" -> UserManager.helpLevel();
                         case "roulette", "rlt", "r" -> Roulette.help();
                         case "blackjack", "bj", "b" -> Blackjack.help();
+                        case "welcome" -> welcomeMessage();
                         default -> {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
                             builder.setDescription("Not just anybody?");
                             for (Plugin plugin : plugins) {
-                                if (!plugin.commands().contains("naughty"))
+                                if (!plugin.commands().contains("naughty")) {
                                     builder.addField(
                                             new MessageEmbed.Field(plugin.getName(), plugin.getDescription(), false)
                                     );
+                                }
                             }
                             builder.setFooter("For detailed help messages:\n'" + prefix + " help <command>'");
                             yield builder.build();
@@ -105,7 +122,7 @@ public class MainListener extends ListenerAdapter {
         }
 
         String param = String.join(" ", args[1], args[2]).trim();
-        
+
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(args[0])) {
                 if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[0], param, prefix)) {
@@ -115,5 +132,30 @@ public class MainListener extends ListenerAdapter {
             }
         }
         channel.sendMessage("Couldn't find command in any plugins!").queue();
+    }
+
+    private MessageEmbed welcomeMessage() {
+        EmbedBuilder builder = new EmbedBuilder();
+        builder.setTitle("Welcome to the penguin colony!");
+        builder.setDescription("""
+                               Help page: `dp! help`
+                                                           
+                               :fish: : fish is your daily money and 
+                               :penguin: : mateability is your social credit balance.
+                                                           
+                               Your main goal is to achieve the highest mateability score to become
+                               the emperor 
+                                                           
+                               It gets higher the more games you win, but also decreases, if you loose!
+                               `dp! score` and `dp! global` might be useful here..
+                                                           
+                               A higher mateability also increases your rank, **but**
+                               if you aren't a well known colony member (lower than Humboldt Penguin), 
+                               leveling up costs fish. 
+                               `dp! help lvl` gives you more information about social ranks.
+                               """
+        );
+        builder.setFooter("For detailed help messages:\n'" + prefix + " help <command>'");
+        return builder.build();
     }
 }

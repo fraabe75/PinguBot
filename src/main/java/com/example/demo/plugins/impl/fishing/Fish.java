@@ -64,11 +64,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
             UserEntity user;
             Member member = event.getGuild().getMember(event.getUser());
             assert member != null;
-            if (!userRepository.existsById(member.getIdLong())) {
-                user = new UserEntity(member.getIdLong(), member.getUser().getName());
-            } else {
-                user = userRepository.getOne(event.getUser().getIdLong());
-            }
+            user = UserEntity.getUserByIdLong(member.getIdLong(), userRepository, member);
 
             switch (event.getReactionEmote().getName()) {
                 case "\uD83D\uDC1F", "\uD83D\uDC20" -> {

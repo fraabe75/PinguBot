@@ -7,15 +7,11 @@ import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,16 +87,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
 
         long userID = event.getAuthor().getIdLong();
-        UserEntity user;
-
-        if (!userRepository.existsById(userID)) {
-            event.getChannel().sendMessage(
-                    "Sorry, but we don't know you yet. But you now have a brand new profile!"
-            ).queue();
-            userRepository.saveAndFlush(user = new UserEntity(userID, event.getAuthor().getName()));
-        } else {
-            user = userRepository.getOne(userID);
-        }
+        UserEntity user = UserEntity.getUserByIdLong(userID, userRepository, Objects.requireNonNull(event.getMember()));
 
         switch (command) {
             case "score", "elo", "mateability", "s" -> {

@@ -1,5 +1,7 @@
 package com.example.demo.database.entities;
 
+import com.example.demo.database.repositories.UserRepository;
+import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
 
 import javax.persistence.Entity;
@@ -32,6 +34,22 @@ public class UserEntity {
     public UserEntity() {
         
     }
+    
+    public static UserEntity getUserByIdLong(Long id, UserRepository userRep, Member member) {
+        UserEntity user;
+        String memberName = (member.getNickname() == null ? member.getEffectiveName() : member.getNickname());
+
+        if (!userRep.existsById(id)) {
+            user = new UserEntity(id, memberName);
+        } else {
+            user = userRep.getOne(id);
+            if (!user.getUserName().equals(memberName)
+            ) {
+                user.setUserName(memberName);
+            }
+        }
+        return user;
+    }
 
     public Long getUserId() {
         return userId;
@@ -39,6 +57,10 @@ public class UserEntity {
 
     public @NotNull String getUserName() {
         return userName;
+    }
+
+    public void setUserName(@NotNull String userName) {
+        this.userName = userName;
     }
 
     public long getFish() {

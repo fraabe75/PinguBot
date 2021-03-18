@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -90,7 +91,11 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                             builder.setTitle("Payout");
                             b.addPayoutPerUser(builder, rolledNumber)
                              .forEach((key, value) -> {
-                                 UserEntity author = userRepository.getOne(key);
+                                 UserEntity author = UserEntity.getUserByIdLong(
+                                         key,
+                                         userRepository,
+                                         Objects.requireNonNull(event.getMember())
+                                 );
                                  if (value > 0) {
                                      author.addFish(value);
                                      author.addMateability(1);
@@ -138,7 +143,11 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                                     new UserEntity(authorID, event.getAuthor().getName().toLowerCase())
                             );
                         }
-                        author = userRepository.getOne(authorID);
+                        author = UserEntity.getUserByIdLong(
+                                authorID,
+                                userRepository,
+                                Objects.requireNonNull(event.getMember())
+                        );
                         if (!board.addPlayer(author)) {
                             channel.sendMessage("Reached player limit of " +
                                                 board.maxColorPlayers() +
@@ -147,7 +156,11 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                                    .queue(m -> lastErrorMessageID = m.getIdLong());
                         }
                     } else {
-                        author = userRepository.getOne(authorID);
+                        author = UserEntity.getUserByIdLong(
+                                authorID,
+                                userRepository,
+                                Objects.requireNonNull(event.getMember())
+                        );
                     }
                     String betField = param.trim().split(" ")[0];
                     long betAmount;
