@@ -120,17 +120,17 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             } else {
                 String proposedName = param.substring(0, param.contains("#") ? param.indexOf("#") : param.length());
                 foundMember = userRepository.findAll()
-                                            .stream()
-                                            .filter(u -> u.getUserName().equalsIgnoreCase(proposedName))
-                                            .findAny()
-                                            .orElse(null);
+                        .stream()
+                        .filter(u -> u.getUserName().equalsIgnoreCase(proposedName))
+                        .findAny()
+                        .orElse(null);
             }
 
             if (foundMember == null) {
                 channel.sendMessage(
                         "Sorry, but our penguins weren't able to find any colony member identified by \""
-                        + param
-                        + "\"."
+                                + param
+                                + "\"."
                 ).queue();
             } else {
                 sendUserProfileEmbed(foundMember, channel);
@@ -150,11 +150,11 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.addField(
                 "Emperor of the colony:",
                 userList.get(0).getUserName() +
-                " (" +
-                userList.get(0).getFish() +
-                " | " +
-                userList.get(0).getMateability() +
-                ")",
+                        " (" +
+                        userList.get(0).getFish() +
+                        " | " +
+                        userList.get(0).getMateability() +
+                        ")",
                 false
         );
 
@@ -200,8 +200,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.addField("Fish", ((Long) user.getFish()).toString() + " :fish:", true);
         builder.addField("Mateability", ((Long) user.getMateability()).toString() + " :penguin:", true);
         builder.setDescription("""
-                               Collect fish and improve your\s
-                               mateability by winning games.""");
+                Collect fish and improve your\s
+                mateability by winning games.""");
 
         RankClasses.Rank userRank = getRank(user);
         ClassPathResource file = new ClassPathResource(userRank.getImg());
@@ -210,8 +210,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setThumbnail("attachment://" + file.getFilename());
         try {
             channel.sendMessage(builder.build())
-                   .addFile(file.getFile(), Objects.requireNonNull(file.getFilename()))
-                   .queue();
+                    .addFile(file.getFile(), Objects.requireNonNull(file.getFilename()))
+                    .queue();
         } catch (IOException e) {
             System.err.println("Couldn't load profile picture: " + e.getMessage());
         }
@@ -220,23 +220,23 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private String level(long userId) {
         UserEntity user = userRepository.findById(userId).get();
         //min. humboldt -> dynamic ranking
-        if(getRank(user).getEn().equals("Emperor penguin")) {
+        if (getRank(user).getEn().equals("Emperor penguin")) {
             return "You are already the greatest penguin of all time!";
         }
-        if(user.getRank().equals("dynamic")) {
+        if (user.getRank().equals("dynamic")) {
             return "You can only reach higher levels through a higher mateability!";
         }
 
         Optional<Map.Entry<String, RankClasses.Rank>> newRank = rankClasses.entrySet()
                 .stream().filter(x -> x.getValue().getLvl() == rankClasses.get(user.getRank()).getLvl() + 1)
                 .findAny();
-        if(newRank.isEmpty()) {
+        if (newRank.isEmpty()) {
             return "Database error!";
         }
 
-        if(user.getFish() >= newRank.get().getValue().getCost()) {
+        if (user.getFish() >= newRank.get().getValue().getCost()) {
             user.subFish(newRank.get().getValue().getCost());
-            if(newRank.get().getKey().equals("humboldt")) {
+            if (newRank.get().getKey().equals("humboldt")) {
                 user.setRank("dynamic");
                 userRepository.saveAndFlush(user);
                 return "Congratulations! You are now part of the dynamic rank system!";
@@ -254,10 +254,10 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
         List<Long> dynamicUserList = new ArrayList<>(userRepository.findAllByRankDynamic());
 
-        if(user.getRank().equals("dynamic")) {
+        if (user.getRank().equals("dynamic")) {
             //emperor
             UserEntity emperor = userRepository.findById(dynamicUserList.stream().findFirst().get()).orElse(null);
-            if(emperor != null && user.getUserId().equals(emperor.getUserId())) {
+            if (emperor != null && user.getUserId().equals(emperor.getUserId())) {
                 return rankClasses.get("emperor");
             }
             //dynamic ranks

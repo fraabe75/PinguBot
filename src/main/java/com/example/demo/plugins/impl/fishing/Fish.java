@@ -43,9 +43,9 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
 
     public static MessageEmbed help() {
         return new EmbedBuilder().setTitle("Petri Heil!")
-                                 .setDescription("You find yourself in the need of some more, delicious fish?")
-                                 .addField("fish", "start the fishing competition", false)
-                                 .build();
+                .setDescription("You find yourself in the need of some more, delicious fish?")
+                .addField("fish", "start the fishing competition", false)
+                .build();
     }
 
     @Override
@@ -55,7 +55,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
         MessageHistory channelHistory = channel.getHistory();
         if (fishGames.stream().map(channelHistory::getMessageById).findAny().isPresent()) {
             channel.sendMessage("Can't start a new fishing competition while there is already one happening" +
-                                " in this channel.").queue();
+                    " in this channel.").queue();
         } else {
             startFishingCompetition(channel);
         }
@@ -84,16 +84,16 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                     int fishNum = (int) (Math.random() * 3) + 1;
                     ch.sendMessage(
                             "+" +
-                            fishNum +
-                            " :fish: for " +
-                            memberName
+                                    fishNum +
+                                    " :fish: for " +
+                                    memberName
                     ).complete();
                     user.addFish(fishNum);
                 }
                 default -> {
                     ch.sendMessage(
                             "-1 :fish: for " +
-                            memberName
+                                    memberName
                     ).complete();
                     user.subFish(1);
                 }
@@ -107,36 +107,36 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
         EmbedBuilder builder = new EmbedBuilder()
                 .setTitle("Time to go fishing!")
                 .setDescription("""
-                                Click the fish emote. **Only the fish emote!**
+                        Click the fish emote. **Only the fish emote!**
 
-                                Be careful, all non-fish reactions cost you a fish!""");
+                        Be careful, all non-fish reactions cost you a fish!""");
 
         ch.sendMessage(builder.build())
-          .queue(m -> {
-              try {
-                  fishGames.add(m.getIdLong());
-                  List<String> localEmotes = Arrays.stream(emotes).collect(Collectors.toList());
+                .queue(m -> {
+                    try {
+                        fishGames.add(m.getIdLong());
+                        List<String> localEmotes = Arrays.stream(emotes).collect(Collectors.toList());
 
-                  for (int i = 0; i < 8; i++) {
-                      Collections.shuffle(localEmotes);
-                      localEmotes.stream().limit(6).forEach(e -> {
-                          m.addReaction(e).queue();
-                      });
-                      Thread.sleep(5000);
+                        for (int i = 0; i < 8; i++) {
+                            Collections.shuffle(localEmotes);
+                            localEmotes.stream().limit(6).forEach(e -> {
+                                m.addReaction(e).queue();
+                            });
+                            Thread.sleep(5000);
 
-                      m.clearReactions().queue();
-                      Thread.sleep(500);
-                  }
-                  m.clearReactions().queue();
-                  m.editMessage(
-                          new EmbedBuilder().setTitle("Fishing time is over!")
-                                            .setFooter("Start another fishing event with 'dp! fish'")
-                                            .build()
-                  ).queue();
-                  fishGames.remove(m.getIdLong());
-              } catch (InterruptedException e) {
-                  e.printStackTrace();
-              }
-          });
+                            m.clearReactions().queue();
+                            Thread.sleep(500);
+                        }
+                        m.clearReactions().queue();
+                        m.editMessage(
+                                new EmbedBuilder().setTitle("Fishing time is over!")
+                                        .setFooter("Start another fishing event with 'dp! fish'")
+                                        .build()
+                        ).queue();
+                        fishGames.remove(m.getIdLong());
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                });
     }
 }
