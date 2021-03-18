@@ -120,7 +120,7 @@ public class MainListener extends ListenerAdapter {
         for (GuildMessageReceivedPlugin guildMessageReceivedPlugin : guildMessageReceivedPlugins) {
             if (((Plugin) guildMessageReceivedPlugin).commands().contains(args[0])) {
                 if (!guildMessageReceivedPlugin.guildMessageReceived(event, args[0], param, prefix)) {
-                    channel.sendMessage("Couldn't find command! Try 'dp! help'").queue();
+                    channel.sendMessage("Couldn't find command! Try '" + prefix + " help'").queue();
                 }
                 return;
             }
