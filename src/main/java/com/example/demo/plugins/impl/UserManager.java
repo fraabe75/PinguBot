@@ -13,6 +13,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -140,36 +141,53 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private MessageEmbed globalRank(UserEntity user) {
         EmbedBuilder builder = new EmbedBuilder();
 
-        builder.setTitle("Highscores:");
-        List<UserEntity> userList = userRepository.findAll(Sort.by(Sort.Direction.DESC, "mateability"));
+        builder.setTitle("Global Top Ten:");
+        List<UserEntity> userList = userRepository.findAll(Sort.by(Sort.Direction.DESC, "mateability", "fish"));
         List<Long> userIdList = userList.stream().map(UserEntity::getUserId).collect(Collectors.toList());
 
-        StringBuilder topTen = new StringBuilder();
-        for (int i = 0; i < userList.size() && i < 10; i++) {
-            topTen.append(i + 1);
-            topTen.append(". ");
-            topTen.append(userList.get(i).getUserName());
-            topTen.append(" - ");
-            topTen.append(userList.get(i).getMateability());
-            topTen.append("\n");
+        builder.setDescription(":fish: : fish | :penguin: : mateability");
+
+        builder.addField(
+                "Emperor of the colony:",
+                userList.get(0).getUserName() +
+                " (" +
+                userList.get(0).getFish() +
+                " | " +
+                userList.get(0).getMateability() +
+                ")",
+                false
+        );
+
+        for (int i = 1; i < userList.size() && i < 10; i++) {
+            builder.addField(
+                    (i + 1) + ". " + userList.get(i).getUserName(),
+                    "(" + userList.get(i).getFish() + " | " + userList.get(i).getMateability() + ")",
+                    true
+            );
         }
-        builder.addField("Global Top Ten:", topTen.toString(), false);
 
         if (!userIdList.subList(0, userList.size() <= 9 ? userList.size() - 1 : 9).contains(user.getUserId())) {
             StringBuilder positions = new StringBuilder("...\n");
             int startIndex = userIdList.indexOf(user.getUserId());
-            for (int i = Math.max(startIndex - 2, 0); i < userList.size() && i <= startIndex + 2; i++) {
+            for (int i = Math.max(startIndex - 1, 0); i < userList.size() && i <= startIndex + 1; i++) {
                 positions.append(i + 1);
                 positions.append(". ");
                 if (i == startIndex) positions.append("*");
                 positions.append(userList.get(i).getUserName());
-                positions.append(" - ");
+                positions.append(" - (");
+                positions.append(userList.get(i).getFish());
+                positions.append(" :fish: | ");
                 positions.append(userList.get(i).getMateability());
+                positions.append(" :penguin: )");
                 if (i == startIndex) positions.append("*");
                 positions.append("\n");
             }
             positions.append("...");
-            builder.addField("Your are currently on position " + startIndex + ":", positions.toString(), false);
+            builder.addField(
+                    "Your are currently on position " + (startIndex + 1) + ":",
+                    positions.toString(),
+                    false
+            );
         }
 
         return builder.build();
