@@ -28,7 +28,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         addCommands(
                 "user", "u",
                 "score", "mateability", "elo", "s",
-                "global", "stats", "rank", "ranks", " g",
+                "global", "stats", "rank", "ranks", "g",
                 "levelup", "level", "lvl", "l",
                 "send", "transaction"
         );

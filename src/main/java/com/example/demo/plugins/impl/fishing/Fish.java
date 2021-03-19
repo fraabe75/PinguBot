@@ -15,17 +15,14 @@ import org.springframework.stereotype.Service;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 @Service
 public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMessageReactionAddPlugin {
 
     private final UserRepository userRepository;
-    private final List<Long> runningFishGames;
-    private final List<Long> waitingFishGames;
+    private final List<Message> runningFishGames;
+    private final List<Message> waitingFishGames;
 
     private final String[] emotes = {
             "U+1F41F", // fish
@@ -59,10 +56,15 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
         TextChannel channel = event.getChannel();
 
         MessageHistory channelHistory = channel.getHistory();
-        if (runningFishGames.stream().map(channelHistory::getMessageById).findAny().isPresent()) {
+        if (runningFishGames.stream().anyMatch(m -> m.getChannel().equals(channel))) {
             channel.sendMessage("Can't start a new fishing competition while there is already one happening" +
                                 " in this channel.").queue();
         } else {
+            Optional<Message> lastMessageToDelete;
+            if ((lastMessageToDelete =
+                    waitingFishGames.stream().filter(m -> m.getChannel().equals(channel)).findAny()).isPresent()) {
+                waitingFishGames.remove(waitingFishGames.indexOf(lastMessageToDelete.get())).delete().queue();
+            }
             channel.sendMessage(
                     new EmbedBuilder().setTitle("Time to go fishing!")
                                       .setDescription("""
@@ -72,7 +74,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                                       .setFooter("If you're ready catch some fish, react with :fish:")
                                       .setColor(Color.BLUE).build()
             ).queue(m -> {
-                waitingFishGames.add(m.getIdLong());
+                waitingFishGames.add(m);
                 m.addReaction("U+1F41F").queue();
                 m.addReaction("U+1F6B1").queue();
             });
@@ -86,45 +88,57 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
             return false;
         }
         TextChannel ch = event.getChannel();
-
-        if (waitingFishGames.contains(Long.parseLong(messageId))) {
-            waitingFishGames.remove(Long.parseLong(messageId));
-            if (event.getReaction().getReactionEmote().getEmoji().equals("\uD83D\uDC1F")) {
-                ch.retrieveMessageById(messageId).queue(this::startFishingCompetition);
-            }
-        } else if (!event.getUser().isBot() &&
-                   runningFishGames.contains(Long.parseLong(messageId)) &&
-                   event.getReaction().retrieveUsers().stream().anyMatch(User::isBot)) {
-            ch.clearReactionsById(messageId, event.getReactionEmote().getEmoji()).queue();
-
-            UserEntity user;
-            user = UserEntity.getUserByIdLong(
-                    event.getGuild().getMember(event.getUser()),
-                    event.getUser(),
-                    userRepository
-            );
-            String memberName = user.getUserName();
-
-            switch (event.getReactionEmote().getName()) {
-                case "\uD83D\uDC1F", "\uD83D\uDC20" -> {
-                    int fishNum = (int) (Math.random() * 3) + 1;
-                    ch.sendMessage(
-                            "+" +
-                            fishNum +
-                            " :fish: for " +
-                            memberName
-                    ).complete();
-                    user.addFish(fishNum);
+        Optional<Message> messageOption = ch.getIterableHistory()
+                      .complete()
+                      .stream()
+                      .filter(message -> message.getId().equals(messageId))
+                      .findAny();
+        if (messageOption.isPresent()) {
+            Message m = messageOption.get();
+            if (waitingFishGames.contains(m)) {
+                waitingFishGames.remove(m);
+                System.out.println("Event");
+                if (event.getReaction().getReactionEmote().getEmoji().equals("\uD83D\uDC1F")) {
+                    startFishingCompetition(m);
+                    System.out.println("Event2");
+                } else {
+                    System.out.println("Event3");
+                    m.delete().queue();
                 }
-                default -> {
-                    ch.sendMessage(
-                            "-1 :fish: for " +
-                            memberName
-                    ).complete();
-                    user.subFish(1);
+            } else if (!event.getUser().isBot() &&
+                       runningFishGames.contains(m) &&
+                       event.getReaction().retrieveUsers().stream().anyMatch(User::isBot)) {
+                ch.clearReactionsById(messageId, event.getReactionEmote().getEmoji()).queue();
+
+                UserEntity user;
+                user = UserEntity.getUserByIdLong(
+                        event.getGuild().getMember(event.getUser()),
+                        event.getUser(),
+                        userRepository
+                );
+                String memberName = user.getUserName();
+
+                switch (event.getReactionEmote().getName()) {
+                    case "\uD83D\uDC1F", "\uD83D\uDC20" -> {
+                        int fishNum = (int) (Math.random() * 3) + 1;
+                        ch.sendMessage(
+                                "+" +
+                                fishNum +
+                                " :fish: for " +
+                                memberName
+                        ).complete();
+                        user.addFish(fishNum);
+                    }
+                    default -> {
+                        ch.sendMessage(
+                                "-1 :fish: for " +
+                                memberName
+                        ).complete();
+                        user.subFish(1);
+                    }
                 }
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -139,7 +153,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                                             .setColor(Color.BLUE).build()
         ).queue(m -> {
             try {
-                runningFishGames.add(m.getIdLong());
+                runningFishGames.add(m);
                 List<String> localEmotes = Arrays.stream(emotes).collect(Collectors.toList());
 
                 for (int i = 0; i < 8; i++) {
