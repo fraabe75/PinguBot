@@ -3,6 +3,7 @@ package com.example.demo.core;
 import com.example.demo.plugins.GuildMessageReactionAddPlugin;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
 import com.example.demo.plugins.Plugin;
+import com.example.demo.plugins.impl.baccarat.Baccarat;
 import com.example.demo.plugins.impl.usermanager.UserManager;
 import com.example.demo.plugins.impl.blackjack.Blackjack;
 import com.example.demo.plugins.impl.fishing.Fish;
@@ -80,6 +81,7 @@ public class MainListener extends ListenerAdapter {
                         case "blackjack", "bj", "b" -> Blackjack.help();
                         case "fish", "f" -> Fish.help();
                         case "mia", "m" -> Mia.help();
+                        case "baccarat", "bac", "bc" -> Baccarat.help();
                         default -> {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
