@@ -28,7 +28,7 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
     public Baccarat(UserRepository userRepository) {
         setName("Baccarat");
         setDescription("The best game for stupid people.");
-        addCommands("bc", "baccarat", "bac");
+        addCommands("baccarat", "bac", "bc");
         this.userRepository = userRepository;
     }
 
@@ -36,18 +36,12 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Baccarat help");
         embedBuilder.setDescription("""
-                Baccarat ist the perfect game
+                Baccarat is the perfect game
                 for when you are walking into a casino and want to look like Daniel Craig,
                 but are already 7 Cosmopolitans deep into the evening.""");
-        embedBuilder.addField("baccarat <bet> <betAmount>", "start a new Baccarat game, betting on the selected outcome\nand with the selected amount.", false);
-        embedBuilder.addField("(player|bank|tie)", "possible options for the <bet>.\n" +
-                "Bets on either the player/bank winning or a tie occurring.", false);
-        embedBuilder.setFooter("""
-                shortcuts:
-                baccarat -> bac, bc
-                player -> p
-                bank -> b
-                tie -> t""");
+        embedBuilder.addField("baccarat (player | bank | tie)  <value>", "start a new game and bet on the selected outcome", false);
+        embedBuilder.addField("baccarat rules", "rules and payout rates", false);
+        embedBuilder.setFooter("Shortcuts: 'bac', 'bc'");
         return embedBuilder.build();
     }
 
@@ -55,27 +49,27 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
         TextChannel channel = event.getChannel();
         User user = event.getAuthor();
-        UserEntity userEntity = UserEntity.getUserByIdLong(null, user, userRepository);
         Member member = event.getMember();
+        UserEntity userEntity = UserEntity.getUserByIdLong(null, user, userRepository);
         PlayerBet bet;
-
-        //create shuffled Stack of 6 decks
-        Stack<Cards> stack = new Stack<>();
-        for (int i=0;i<6;i++) stack.addAll(Arrays.asList(Cards.values()));
-        Collections.shuffle(stack);
 
         try {
             bet = switch (param.trim().split(" ")[0]) {
-                case "player","p" -> PlayerBet.Player;
+                case "player", "p" -> PlayerBet.Player;
                 case "bank", "b" -> PlayerBet.Bank;
                 case "tie", "t" -> PlayerBet.Tie;
-                case "rules" -> printRules(channel);
+                case "rules", "r" -> printRules(channel);
                 default -> null;
             };
-            if(bet == null) {
+            if (bet == null) {
                 channel.sendMessage(help()).queue();
                 return true;
             }
+
+            //create shuffled Stack of 6 decks
+            Stack<Cards> stack = new Stack<>();
+            for (int i = 0; i < 6; i++) stack.addAll(Arrays.asList(Cards.values()));
+            Collections.shuffle(stack);
 
             ArrayList<Cards> pHand = new ArrayList<>();
             ArrayList<Cards> bHand = new ArrayList<>();
@@ -86,9 +80,9 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
 
             long betAmount = Long.parseLong(param.trim().split(" ")[1]);
 
-            if (userEntity.getFish() < betAmount || betAmount < 0) {
+            if (userEntity.getFish() < betAmount || betAmount <= 0) {
                 channel.sendMessage("Don't bet money you don't have!").queue();
-                throw new Exception();
+                return true;
             }
             userEntity.subFish(betAmount);
 
@@ -104,17 +98,20 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
             natural = pValue >= 8 || bValue >= 8;
 
             //bank third card
-            if(!natural) {
+            if (!natural) {
                 //player third card
-                if(pValue <= 5) pHand.add(stack.pop());
+                if (pValue <= 5) {
+                    pHand.add(stack.pop());
+                }
                 pValue = calcValue(pHand);
 
                 //bank third card
-                if(bValue <= 2) bHand.add(stack.pop());
-                else if(bValue <= 6) {
-                    if(bValue > pValue && bet == PlayerBet.Bank) bHand.add(stack.pop());
-                    else if(bValue == pValue && bet == PlayerBet.Tie) bHand.add(stack.pop());
-                    else if(bValue < pValue && bet == PlayerBet.Player) bHand.add(stack.pop());
+                if (bValue <= 2) {
+                    bHand.add(stack.pop());
+                } else if (bValue <= 6) {
+                    if (bValue > pValue && bet == PlayerBet.Bank) bHand.add(stack.pop());
+                    else if (bValue == pValue && bet == PlayerBet.Tie) bHand.add(stack.pop());
+                    else if (bValue < pValue && bet == PlayerBet.Player) bHand.add(stack.pop());
                     bValue = calcValue(bHand);
                 }
             }
@@ -122,16 +119,19 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
             //calculate winner
             winner = (pValue == bValue) ? PlayerBet.Tie : (pValue < bValue) ? PlayerBet.Bank : PlayerBet.Player;
             //Assign "winnings" to betAmount
-            betAmount = (winner == bet) ? (long) (betAmount * bet.getRATE()) : 0;
-            userEntity.addFish(betAmount);
+            if (winner == bet) {
+                userEntity.addFish((long) (betAmount * bet.getRATE()));
+            }
             userRepository.saveAndFlush(userEntity);
 
             //print result
             EmbedBuilder embedBuilder = new EmbedBuilder();
-            embedBuilder.setTitle("Baccarat result");
-            embedBuilder.setDescription(betAmount > 0 ? "You won!" : "You lost.");
-            embedBuilder.addField("Player Cards", formatHand(pHand), false);
+            embedBuilder.setTitle("Baccarat");
+            embedBuilder.setDescription("Player: " + (member == null || member.getNickname() == null ? user.getName() : member.getNickname()) +
+                    "\nStakes: " + betAmount + " \uD83D\uDC1F \n"
+                    + ((winner == bet ? "You won " : "You lost") + (long) (betAmount * bet.getRATE()) + " \uD83D\uDC1F"));
             embedBuilder.addField("Bank Cards", formatHand(bHand), false);
+            embedBuilder.addField("Player Cards", formatHand(pHand), false);
             embedBuilder.addField("Scores", formatScores(pValue, bValue), false);
             embedBuilder.addField("Bets", formatBets(bet, winner), false);
             channel.sendMessage(embedBuilder.build()).queue();
@@ -147,13 +147,13 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
 
     private int calcValue(ArrayList<Cards> hand) {
         return hand.stream().mapToInt(c ->
-                (c.getName().equals("10 of Clubs") || c.getName().equals("10 of Hearts") || c.getName().equals("10 of Spades") || c.getName().equals("10 of Diamonds")) ? 10 : c.getValue()%10
+                (c.getName().equals("10 of Clubs") || c.getName().equals("10 of Hearts") || c.getName().equals("10 of Spades") || c.getName().equals("10 of Diamonds")) ? 10 : c.getValue() % 10
         ).sum();
     }
 
     private String formatHand(ArrayList<Cards> hand) {
         StringBuilder stringBuilder = new StringBuilder();
-        for(Cards card : hand) {
+        for (Cards card : hand) {
             stringBuilder.append(card.getName());
             stringBuilder.append("\n");
         }
@@ -161,12 +161,13 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
     }
 
     private String formatScores(long pScore, long bScore) {
-        return "Player Score: " +
-                pScore +
-                "\n" +
-                "Bank Score: " +
+        return "Bank Score: " +
                 bScore +
+                "\n" +
+                "Player Score: " +
+                pScore +
                 "\n";
+
     }
 
     private String formatBets(PlayerBet player, PlayerBet winner) {
@@ -183,10 +184,10 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         embedBuilder.setTitle("Baccarat Rules");
         embedBuilder.addField("Rules", "https://www.onlinecasinoselite.org/getting-started/gambling-rules/baccarat", false);
         embedBuilder.addField("Payout Rates", """
-               Player Bet = 2:1
-               Bank Bet = 1,95:1
-               Tie Bet = 8:1
-               """, false);
+                Player Bet 2:1
+                Bank Bet 1,95:1
+                Tie Bet 8:1
+                """, false);
         channel.sendMessage(embedBuilder.build()).queue();
         return null;
     }

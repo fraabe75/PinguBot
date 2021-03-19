@@ -79,9 +79,9 @@ public class MainListener extends ListenerAdapter {
                         case "level", "lvl", "l" -> UserManager.helpLevel();
                         case "roulette", "rlt", "r" -> Roulette.help();
                         case "blackjack", "bj", "b" -> Blackjack.help();
-                        case "fish", "f" -> Fish.help();
-                        case "mia", "m" -> Mia.help();
                         case "baccarat", "bac", "bc" -> Baccarat.help();
+                        case "mia", "m" -> Mia.help();
+                        case "fish", "f" -> Fish.help();
                         default -> {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
