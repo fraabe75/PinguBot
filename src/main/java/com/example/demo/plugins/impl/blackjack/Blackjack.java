@@ -183,10 +183,9 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
             EmbedBuilder builder = new EmbedBuilder();
             builder.setTitle("Blackjack");
             builder.setDescription("Player: " + (member == null || member.getNickname() == null ? player.getName() : member.getNickname()) + "\nStakes: " + bet + " \uD83D\uDC1F");
-            builder.addField("Cards of dealer:", "secret card\n" + dealerCards.get(1).getName()
-                                                 + "\n\nDealer score: " + dealerCards.get(1).getValue(), false);
-            builder.addField("Your cards:", getCards(playerCards, newCard)
-                                            + "\nYour score: " + calculateScore(true), false);
+            builder.addField("Bank cards:", "secret card\n" + dealerCards.get(1).getName(), false);
+            builder.addField("Player cards:", getCards(playerCards, newCard), false);
+            builder.addField("Scores", "Dealer score: " + dealerCards.get(1).getValue() + "\nPlayer score: " + calculateScore(true), false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
             userScore = calculateScore(true);
             if (newCard) {
@@ -208,10 +207,9 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                 getCards(dealerCards, true);
                 dealerScore = calculateScore(false);
             }
-            builder.addField("Cards of dealer:", getCards(dealerCards, false)
-                                                 + "\nDealer score: " + dealerScore, false);
-            builder.addField("Your cards:", getCards(playerCards, false)
-                                            + "\nYour score: " + userScore, false);
+            builder.addField("Cards of dealer:", getCards(dealerCards, false), false);
+            builder.addField("Your cards:", getCards(playerCards, false), false);
+            builder.addField("Scores", "Dealer score: " + dealerScore + "\nPlayer score: " + userScore, false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
             if (dealerScore > 21 || dealerScore < userScore) {
                 updateAccount(1);

@@ -37,8 +37,10 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         embedBuilder.setTitle("Baccarat help");
         embedBuilder.setDescription("""
                 Baccarat is the perfect game
-                for when you are walking into a casino and want to look like Daniel Craig,
-                but are already 7 Cosmopolitans deep into the evening.""");
+                for when you are walking into a casino
+                and want to look like Daniel Craig,
+                but are already 7 Cosmopolitans
+                deep into the evening.""");
         embedBuilder.addField("baccarat (player | bank | tie)  <value>", "start a new game and bet on the selected outcome", false);
         embedBuilder.addField("baccarat rules", "rules and payout rates", false);
         embedBuilder.setFooter("Shortcuts: 'bac', 'bc'");
@@ -54,12 +56,15 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         PlayerBet bet;
 
         try {
-            bet = switch (param.trim().split(" ")[0]) {
-                case "player", "p" -> PlayerBet.Player;
-                case "bank", "b" -> PlayerBet.Bank;
-                case "tie", "t" -> PlayerBet.Tie;
-                case "rules", "r" -> printRules(channel);
-                default -> null;
+            switch (param.trim().split(" ")[0]) {
+                case "player", "p" -> bet = PlayerBet.Player;
+                case "bank", "b" -> bet = PlayerBet.Bank;
+                case "tie", "t" -> bet = PlayerBet.Tie;
+                case "rules", "r" -> {
+                    printRules(channel);
+                    return true;
+                }
+                default -> bet = null;
             };
             if (bet == null) {
                 channel.sendMessage(help()).queue();
@@ -128,12 +133,12 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
             EmbedBuilder embedBuilder = new EmbedBuilder();
             embedBuilder.setTitle("Baccarat");
             embedBuilder.setDescription("Player: " + (member == null || member.getNickname() == null ? user.getName() : member.getNickname()) +
-                    "\nStakes: " + betAmount + " \uD83D\uDC1F \n"
-                    + ((winner == bet ? "You won " : "You lost") + (long) (betAmount * bet.getRATE()) + " \uD83D\uDC1F"));
-            embedBuilder.addField("Bank Cards", formatHand(bHand), false);
-            embedBuilder.addField("Player Cards", formatHand(pHand), false);
-            embedBuilder.addField("Scores", formatScores(pValue, bValue), false);
+                    "\nStakes: " + betAmount + " \uD83D\uDC1F \n");
             embedBuilder.addField("Bets", formatBets(bet, winner), false);
+            embedBuilder.addField("Bank cards", formatHand(bHand), false);
+            embedBuilder.addField("Player cards", formatHand(pHand), false);
+            embedBuilder.addField("Scores", formatScores(pValue, bValue), false);
+            embedBuilder.addField("Result", winner == bet ? "\nYou won " + (long) (betAmount * bet.getRATE()) + " \uD83D\uDC1F !" : "\nYou lost " + betAmount + " \uD83D\uDC1F !", false);
             channel.sendMessage(embedBuilder.build()).queue();
             return true;
         } catch (Exception e) {

@@ -50,16 +50,16 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Level Help");
         builder.setDescription("""
-                               Eat fish to grow and level up!
-                               
-                               As soon as you grew enough to become a Humboldt (adult state)
-                               penguin, your rank will be determined dynamically,
-                               base on your place in the colony's social structure.
-                               
-                               Remember: As soon as you are an adult (humboldt penguin or higher),\s
-                               your mateability is the only thing that counts!
-                               
-                               Get the highest mateability to become the next emperor!\s""");
+                Eat fish to grow and level up!
+                                               
+                As soon as you grew enough to become a Humboldt (adult state)
+                penguin, your rank will be determined dynamically,
+                base on your place in the colony's social structure.
+                                               
+                Remember: As soon as you are an adult (humboldt penguin or higher),\s
+                your mateability is the only thing that counts!
+                                               
+                Get the highest mateability to become the next emperor!\s""");
         //update prizes from application.properties
         builder.addField("Baby: Fairy penguin", "You need 100 fish to level up!", false);
         builder.addField("0: Galapagos penguin", "You need 200 fish to level up!", false);
@@ -98,11 +98,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                 generateUserProfile(event.getChannel(), "", user);
             }
             case "send", "transaction" -> {
-                long amount = Long.parseLong(param.split(" ")[1].trim());
-                Optional<UserEntity> dbMember = parseDatabaseUser(param.split(" ")[0].trim());
-                if (dbMember.isPresent() &&
-                    !user.getUserId().equals(dbMember.get().getUserId()) &&
-                    transaction(user, dbMember.get(), amount)) {
+                if (transaction(user, param)) {
                     channel.sendMessage("Transaction successful! Your new balance:").queue();
                     generateUserProfile(channel, "", user);
                 } else {
@@ -123,8 +119,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             if (dbMember.isEmpty()) {
                 channel.sendMessage(
                         "Sorry, but our penguins weren't able to find any colony member identified by \""
-                        + param
-                        + "\"."
+                                + param
+                                + "\"."
                 ).queue();
             } else {
                 sendUserProfileEmbed(dbMember.get(), channel);
@@ -138,11 +134,11 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             return userRepository.findById(userID);
         } else {
             String proposedName = search.substring(0, search.contains("#") ? search.indexOf("#") : search.length())
-                                        .replace("@", "");
+                    .replace("@", "");
             return userRepository.findAll()
-                                 .stream()
-                                 .filter(u -> u.getUserName().equalsIgnoreCase(proposedName))
-                                 .findAny();
+                    .stream()
+                    .filter(u -> u.getUserName().equalsIgnoreCase(proposedName))
+                    .findAny();
         }
     }
 
@@ -158,11 +154,11 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.addField(
                 "Emperor of the colony:",
                 userList.get(0).getUserName() +
-                " (" +
-                userList.get(0).getFish() +
-                " | " +
-                userList.get(0).getMateability() +
-                ")",
+                        " (" +
+                        userList.get(0).getFish() +
+                        " | " +
+                        userList.get(0).getMateability() +
+                        ")",
                 false
         );
 
@@ -212,8 +208,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.addField("Fish", ((Long) user.getFish()).toString() + " :fish:", true);
         builder.addField("Mateability", ((Long) user.getMateability()).toString() + " :penguin:", true);
         builder.setDescription("""
-                               Collect fish and improve your\s
-                               mateability by winning games.""");
+                Collect fish and improve your\s
+                mateability by winning games.""");
 
         RankClasses.Rank userRank = getRank(user);
         ClassPathResource file = new ClassPathResource(userRank.getImg());
@@ -222,8 +218,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setThumbnail("attachment://" + file.getFilename());
         try {
             channel.sendMessage(builder.build())
-                   .addFile(file.getFile(), Objects.requireNonNull(file.getFilename()))
-                   .queue();
+                    .addFile(file.getFile(), Objects.requireNonNull(file.getFilename()))
+                    .queue();
         } catch (IOException e) {
             System.err.println("Couldn't load profile picture: " + e.getMessage());
         }
@@ -239,11 +235,11 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         }
 
         Optional<Map.Entry<String, RankClasses.Rank>> newRank = rankClasses.entrySet()
-                                                                           .stream()
-                                                                           .filter(x -> x.getValue().getLvl() ==
-                                                                                        rankClasses.get(user.getRank())
-                                                                                                   .getLvl() + 1)
-                                                                           .findAny();
+                .stream()
+                .filter(x -> x.getValue().getLvl() ==
+                        rankClasses.get(user.getRank())
+                                .getLvl() + 1)
+                .findAny();
         if (newRank.isEmpty()) {
             return "Database error!";
         }
@@ -261,8 +257,8 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             }
         } else {
             return "You don't have enough fish to grow! Next level requires " +
-                   newRank.get().getValue().getCost() +
-                   " :fish:!";
+                    newRank.get().getValue().getCost() +
+                    " :fish:!";
         }
     }
 
@@ -279,20 +275,31 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             //dynamic ranks
             int place = dynamicUserList.indexOf(user.getUserId()) * 8 / dynamicUserList.size();
             return rankClasses.entrySet().stream()
-                              .filter(stringRankEntry -> (stringRankEntry.getValue().getLvl() - 11) * (-1) == place)
-                              .findAny().orElseThrow().getValue();
+                    .filter(stringRankEntry -> (stringRankEntry.getValue().getLvl() - 11) * (-1) == place)
+                    .findAny().orElseThrow().getValue();
         }
         return rankClasses.getOrDefault(user.getRank(), rankClasses.get("fairy"));
     }
 
-    private synchronized boolean transaction(UserEntity sender, UserEntity receiver, long amount) {
-        if (amount <= 0 || amount > sender.getFish()) {
+    private synchronized boolean transaction(UserEntity sender, String param) {
+        try {
+            long amount = Long.parseLong(param.split(" ")[1].trim());
+            Optional<UserEntity> receiver = parseDatabaseUser(param.split(" ")[0].trim());
+
+            if (receiver.isPresent() && !sender.getUserId().equals(receiver.get().getUserId())) {
+                if (amount <= 0 || amount > sender.getFish()) {
+                    return false;
+                }
+                sender.subFish(amount);
+                receiver.get().addFish(amount);
+                userRepository.save(sender);
+                userRepository.saveAndFlush(receiver.get());
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
             return false;
         }
-        sender.subFish(amount);
-        receiver.addFish(amount);
-        userRepository.save(sender);
-        userRepository.saveAndFlush(receiver);
-        return true;
     }
 }

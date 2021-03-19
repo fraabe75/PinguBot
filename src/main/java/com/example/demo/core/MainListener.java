@@ -86,7 +86,7 @@ public class MainListener extends ListenerAdapter {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Help! You need somebody?");
                             builder.setDescription("Not just anybody?");
-                            builder.addField("Welcome", "How to use the bot", false);
+                            builder.addField("Welcome", "How to use the bot.", false);
                             for (Plugin plugin : plugins) {
                                 if (!plugin.commands().contains("naughty")) {
                                     builder.addField(
