@@ -89,7 +89,7 @@ public class Mia extends Plugin implements GuildMessageReceivedPlugin {
                         builder.addField("Dealer throw: " + totalRoll, "" + result, false);
                     }
                     lastThrow = totalRoll;
-                    if(totalRoll != 21) {
+                    if (totalRoll != 21) {
                         miaPlayer *= -1;
                     }
                 }

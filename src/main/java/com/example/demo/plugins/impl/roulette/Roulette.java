@@ -70,7 +70,9 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
         final TextChannel channel = event.getChannel();
 
         if (lastErrorMessageID != null) {
-            channel.deleteMessageById(lastErrorMessageID).queue(m -> {}, e -> {});
+            channel.deleteMessageById(lastErrorMessageID).queue(m -> {
+            }, e -> {
+            });
             lastErrorMessageID = null;
         }
 
@@ -81,56 +83,56 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         int rolledNumber = new Random().nextInt(37);
                         channel.sendMessage(
                                 new EmbedBuilder().setTitle("Rolled Number: " + rolledNumber)
-                                                  .setColor(Number.COLOR_TABLE[rolledNumber])
-                                                  .build()
+                                        .setColor(Number.COLOR_TABLE[rolledNumber])
+                                        .build()
                         ).queue();
 
                         EmbedBuilder builder = new EmbedBuilder();
                         builder.setTitle("Payout");
                         b.addPayoutPerUser(builder, rolledNumber)
-                         .forEach((key, value) -> {
-                             UserEntity author = userRepository.getOne(key);
-                             if (value <= 0) {
-                                 author.subMateability(1);
-                             } else {
-                                 author.addFish(value);
-                                 if (value < 30) {
-                                     author.addMateability(1);
-                                 } else if (value < 100) {
-                                     author.addMateability(2);
-                                 } else {
-                                     author.addMateability(3);
-                                 }
-                             }
-                             userRepository.save(author);
-                         });
+                                .forEach((key, value) -> {
+                                    UserEntity author = userRepository.getOne(key);
+                                    if (value <= 0) {
+                                        author.subMateability(1);
+                                    } else {
+                                        author.addFish(value);
+                                        if (value < 30) {
+                                            author.addMateability(1);
+                                        } else if (value < 100) {
+                                            author.addMateability(2);
+                                        } else {
+                                            author.addMateability(3);
+                                        }
+                                    }
+                                    userRepository.save(author);
+                                });
                         userRepository.flush();
                         b.setFinished();
                         channel.sendMessage(builder.build()).queue();
                     }));
                 } else {
                     channel.sendMessage("There is already a game in progress.")
-                           .queue(m -> lastErrorMessageID = m.getIdLong());
+                            .queue(m -> lastErrorMessageID = m.getIdLong());
                 }
                 printOrUpdateBoard(board, channel, () -> {
                 });
             }
             case "bet", "set", "place", "b" -> {
                 param = param.replace("bet", "")
-                             .replace("set", "")
-                             .replace("place", "")
-                             .trim();
+                        .replace("set", "")
+                        .replace("place", "")
+                        .trim();
 
                 if (board == null || board.isFinished() || board.getBetTimeRemaining() <= 0) {
                     channel.sendMessage(
                             "No game in progress, start a new one with '"
-                            + prefix
-                            + " rlt play'"
+                                    + prefix
+                                    + " rlt play'"
                     ).queue(m -> lastErrorMessageID = m.getIdLong());
                 } else if (!param.matches("^[\\d\\w]+ (\\d+|all)$")) {
                     channel.sendMessage("Bot does not compute (invalid bet format)\n" +
-                                        "Better try this: '" + prefix + " rlt bet <field> <amount>'")
-                           .queue(m -> lastErrorMessageID = m.getIdLong());
+                            "Better try this: '" + prefix + " rlt bet <field> <amount>'")
+                            .queue(m -> lastErrorMessageID = m.getIdLong());
                 } else {
                     long authorID = event.getAuthor().getIdLong();
                     UserEntity author;
@@ -148,10 +150,10 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         );
                         if (!board.addPlayer(author)) {
                             channel.sendMessage("Reached player limit of " +
-                                                board.maxColorPlayers() +
-                                                " players \n" +
-                                                "which can be displayed on the board")
-                                   .queue(m -> lastErrorMessageID = m.getIdLong());
+                                    board.maxColorPlayers() +
+                                    " players \n" +
+                                    "which can be displayed on the board")
+                                    .queue(m -> lastErrorMessageID = m.getIdLong());
                         }
                     } else {
                         author = UserEntity.getUserByIdLong(
@@ -164,36 +166,35 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                     long betAmount;
                     if (param.trim().split(" ")[1].equals("all")) {
                         betAmount = author.getFish();
-                    }
-                    else {
+                    } else {
                         try {
                             betAmount = Long.parseUnsignedLong(param.trim().split(" ")[1]);
                         } catch (NumberFormatException e) {
                             channel.sendMessage("Invalid bet! (Trying to overflow our bet system, he?)")
-                                   .queue(m -> lastErrorMessageID = m.getIdLong());
+                                    .queue(m -> lastErrorMessageID = m.getIdLong());
                             break;
                         }
                     }
                     if (author.getFish() < betAmount) {
                         channel.sendMessage("We looked everywhere, "
-                                            + author.getUserName()
-                                            + ", but we "
-                                            + "couldn't find any more fish in your bank.\nYou are officially bankrupt.")
-                               .queue(m -> lastErrorMessageID = m.getIdLong());
+                                + author.getUserName()
+                                + ", but we "
+                                + "couldn't find any more fish in your bank.\nYou are officially bankrupt.")
+                                .queue(m -> lastErrorMessageID = m.getIdLong());
                     } else if (betAmount <= 0) {
                         channel.sendMessage("Sorry, no bets <= 0 fish accepted.")
-                               .queue(m -> lastErrorMessageID = m.getIdLong());
+                                .queue(m -> lastErrorMessageID = m.getIdLong());
                     } else {
                         if (!board.addBet(authorID, betAmount, betField)) {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Beep Boop");
                             builder.setDescription("""
-                                                   It seems like you entered a wrong field
-                                                   (do you even know how to read help pages?)
+                                    It seems like you entered a wrong field
+                                    (do you even know how to read help pages?)
 
-                                                   Available fields and their payouts:
+                                    Available fields and their payouts:
 
-                                                   """);
+                                    """);
                             for (MessageEmbed.Field field : RouletteBoard.getFieldHelpFields()) {
                                 builder.addField(field);
                             }
@@ -238,23 +239,23 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
 
         if (b.getUpdateMessage() < 0) {
             ch.sendMessage(builder.build())
-              .addFile(BoardImageGenerator.getImageFile(board), BoardImageGenerator.getImageFileName())
-              .queue(m -> {
-                  b.setUpdateMessage(m.getIdLong());
-                  downstream.run();
-              });
+                    .addFile(BoardImageGenerator.getImageFile(board), BoardImageGenerator.getImageFileName())
+                    .queue(m -> {
+                        b.setUpdateMessage(m.getIdLong());
+                        downstream.run();
+                    });
         } else {
             ch.retrieveMessageById(b.getUpdateMessage())
-              .queue(oldMessage -> oldMessage.delete().queue(
-                      oldMessageDelete -> ch.sendMessage(builder.build())
-                                            .addFile(BoardImageGenerator.getImageFile(board),
-                                                    BoardImageGenerator.getImageFileName())
-                                            .queue(m -> {
-                                                b.setUpdateMessage(m.getIdLong());
-                                                downstream.run();
-                                            })
-                      )
-              );
+                    .queue(oldMessage -> oldMessage.delete().queue(
+                            oldMessageDelete -> ch.sendMessage(builder.build())
+                                    .addFile(BoardImageGenerator.getImageFile(board),
+                                            BoardImageGenerator.getImageFileName())
+                                    .queue(m -> {
+                                        b.setUpdateMessage(m.getIdLong());
+                                        downstream.run();
+                                    })
+                            )
+                    );
         }
     }
 }

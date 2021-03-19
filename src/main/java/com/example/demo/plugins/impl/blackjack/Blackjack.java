@@ -110,7 +110,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
     public boolean guildMessageReactionAdd(GuildMessageReactionAddEvent event, String messageId) {
 
         if (event.getUser().isBot() || !games.containsKey(event.getUser()) ||
-            !games.get(event.getUser()).messageId.equals(messageId)) {
+                !games.get(event.getUser()).messageId.equals(messageId)) {
             return false;
         }
 
@@ -120,7 +120,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         //hit
         if (event.getReactionEmote().getEmoji().equals("\u261D")) {
             channel.editMessageById(game.messageId, game.hit(true))
-                   .queue(message -> message.removeReaction("\u261D", game.player).queue());
+                    .queue(message -> message.removeReaction("\u261D", game.player).queue());
             if (game.userScore > 21) {
                 channel.removeReactionById(game.messageId, "\u261D").queue();
                 channel.removeReactionById(game.messageId, "\u270B").queue();
@@ -132,7 +132,7 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
         //stand
         if (event.getReactionEmote().getEmoji().equals("\u270B")) {
             channel.editMessageById(game.messageId, game.stand())
-                   .queue(message -> message.removeReaction("\u270B", game.player).queue());
+                    .queue(message -> message.removeReaction("\u270B", game.player).queue());
             channel.removeReactionById(game.messageId, "\u261D").queue();
             channel.removeReactionById(game.messageId, "\u270B").queue();
             games.remove(event.getUser());

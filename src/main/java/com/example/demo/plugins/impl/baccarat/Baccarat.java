@@ -65,7 +65,8 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
                     return true;
                 }
                 default -> bet = null;
-            };
+            }
+            ;
             if (bet == null) {
                 channel.sendMessage(help()).queue();
                 return true;
@@ -184,7 +185,7 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
                 "\n";
     }
 
-    private PlayerBet printRules(TextChannel channel) {
+    private void printRules(TextChannel channel) {
         EmbedBuilder embedBuilder = new EmbedBuilder();
         embedBuilder.setTitle("Baccarat Rules");
         embedBuilder.addField("Rules", "https://www.onlinecasinoselite.org/getting-started/gambling-rules/baccarat", false);
@@ -194,6 +195,5 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
                 Tie Bet 8:1
                 """, false);
         channel.sendMessage(embedBuilder.build()).queue();
-        return null;
     }
 }

@@ -40,15 +40,18 @@ enum Field implements RouletteField {
         this.lowerY = lowerY;
     }
 
-    @Override public boolean isThisField(String userInput) {
+    @Override
+    public boolean isThisField(String userInput) {
         return this.emote.equals(userInput);
     }
 
-    @Override public long calculatePayout(long userBet) {
+    @Override
+    public long calculatePayout(long userBet) {
         return userBet * payout;
     }
 
-    @Override public void addBet(long userID, long amount) {
+    @Override
+    public void addBet(long userID, long amount) {
         currentBets.merge(userID, amount, Long::sum);
     }
 
@@ -56,19 +59,23 @@ enum Field implements RouletteField {
         currentBets.clear();
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         return emote;
     }
 
-    @Override public boolean isSpecialField() {
+    @Override
+    public boolean isSpecialField() {
         return true;
     }
 
-    @Override public String getDescription() {
+    @Override
+    public String getDescription() {
         return description;
     }
 
-    @Override public Map<Long, Long> getCurrentBets() {
+    @Override
+    public Map<Long, Long> getCurrentBets() {
         return currentBets;
     }
 
@@ -76,19 +83,23 @@ enum Field implements RouletteField {
         return payout;
     }
 
-    @Override public int getUpperX() {
+    @Override
+    public int getUpperX() {
         return upperX;
     }
 
-    @Override public int getUpperY() {
+    @Override
+    public int getUpperY() {
         return upperY;
     }
 
-    @Override public int getLowerX() {
+    @Override
+    public int getLowerX() {
         return lowerX;
     }
 
-    @Override public int getLowerY() {
+    @Override
+    public int getLowerY() {
         return lowerY;
     }
 }

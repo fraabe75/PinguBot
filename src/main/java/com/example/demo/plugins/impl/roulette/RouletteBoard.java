@@ -157,19 +157,19 @@ class RouletteBoard {
         }
         userBets.forEach((uID, rltFields) ->
                 betBuilder.append(players.get(uID).getEmote())
-                          .append(" ")
-                          .append(players.get(uID).getUser().getUserName())
-                          .append(": ")
-                          .append(rltFields.stream()
-                                           .map(rltField -> rltField +
-                                                            " (" +
-                                                            rltField.getCurrentBets()
-                                                                    .get(uID) +
-                                                            ")"
-                                           )
-                                           .collect(Collectors.joining(", "))
-                          )
-                          .append("\n")
+                        .append(" ")
+                        .append(players.get(uID).getUser().getUserName())
+                        .append(": ")
+                        .append(rltFields.stream()
+                                .map(rltField -> rltField +
+                                        " (" +
+                                        rltField.getCurrentBets()
+                                                .get(uID) +
+                                        ")"
+                                )
+                                .collect(Collectors.joining(", "))
+                        )
+                        .append("\n")
         );
 
         if (betBuilder.toString().isBlank()) {

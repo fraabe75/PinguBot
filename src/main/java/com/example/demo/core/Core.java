@@ -24,8 +24,8 @@ public class Core {
         );
 
         return JDABuilder.create(token, intents).setActivity(Activity.listening("dp! help"))
-                         .addEventListeners(mainListener)
-                         .build();
+                .addEventListeners(mainListener)
+                .build();
     }
 
 }

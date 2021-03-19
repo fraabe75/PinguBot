@@ -1,4 +1,5 @@
 package com.example.demo.plugins;
+
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 

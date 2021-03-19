@@ -67,7 +67,7 @@ public class MainListener extends ListenerAdapter {
                 args.length < 3 ? "" : args[2]
         };
 
-        if(args[0].equals("welcome")) {
+        if (args[0].equals("welcome")) {
             channel.sendMessage(welcomeMessage()).queue();
             return;
         }
@@ -134,23 +134,23 @@ public class MainListener extends ListenerAdapter {
         EmbedBuilder builder = new EmbedBuilder();
         builder.setTitle("Welcome to the penguin colony!");
         builder.setDescription("""
-                               Help page: `dp! help`
-                                                           
-                               :fish: : fish is your daily money 
-                               :penguin: : mateability is your social credit balance
-                                                           
-                               Your main goal is to achieve the highest mateability
-                               to become the emperor!
-                                                           
-                               It gets higher the more games you win, but also decreases, if you loose!
-                               `dp! score` and `dp! global` might be useful here..
-                                                           
-                               A higher mateability also increases your rank, **but**
-                               if you aren't a well known colony member
-                               (lower than Humboldt Penguin), leveling up costs fish. 
-                               
-                               `dp! help lvl` gives you more information about social ranks.
-                               """
+                Help page: `dp! help`
+                                            
+                :fish: : fish is your daily money 
+                :penguin: : mateability is your social credit balance
+                                            
+                Your main goal is to achieve the highest mateability
+                to become the emperor!
+                                            
+                It gets higher the more games you win, but also decreases, if you loose!
+                `dp! score` and `dp! global` might be useful here..
+                                            
+                A higher mateability also increases your rank, **but**
+                if you aren't a well known colony member
+                (lower than Humboldt Penguin), leveling up costs fish. 
+                                               
+                `dp! help lvl` gives you more information about social ranks.
+                """
         );
         builder.setFooter("For detailed help messages:\n'" + prefix + " help <command>'");
         return builder.build();

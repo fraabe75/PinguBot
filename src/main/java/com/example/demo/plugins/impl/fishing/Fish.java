@@ -44,10 +44,10 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
 
     public static MessageEmbed help() {
         return new EmbedBuilder().setTitle("Petri Heil!")
-                                 .setDescription("You find yourself in the need of some more, delicious fish?")
-                                 .addField("fish", "start the fishing competition", false)
-                                 .setFooter("Shortcuts: 'f'")
-                                 .build();
+                .setDescription("You find yourself in the need of some more, delicious fish?")
+                .addField("fish", "start the fishing competition", false)
+                .setFooter("Shortcuts: 'f'")
+                .build();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
 
         if (runningFishGames.stream().anyMatch(m -> m.getChannel().equals(channel))) {
             channel.sendMessage("Can't start a new fishing competition while there is already one happening" +
-                                " in this channel.").queue();
+                    " in this channel.").queue();
         } else {
             Optional<Message> lastMessageToDelete;
             if ((lastMessageToDelete =
@@ -65,12 +65,12 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
             }
             channel.sendMessage(
                     new EmbedBuilder().setTitle("Time to go fishing!")
-                                      .setDescription("""
-                                                      Click the fish emote. **Only the fish emote!**
+                            .setDescription("""
+                                    Click the fish emote. **Only the fish emote!**
 
-                                                      Be careful, all non-fish reactions cost you a fish!""")
-                                      .setFooter("If you're ready catch some fish, react with :fish:")
-                                      .setColor(Color.BLUE).build()
+                                    Be careful, all non-fish reactions cost you a fish!""")
+                            .setFooter("If you're ready catch some fish, react with :fish:")
+                            .setColor(Color.BLUE).build()
             ).queue(m -> {
                 waitingFishGames.add(m);
                 m.addReaction("U+1F41F").queue();
@@ -87,10 +87,10 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
         }
         TextChannel ch = event.getChannel();
         Optional<Message> messageOption = ch.getIterableHistory()
-                      .complete()
-                      .stream()
-                      .filter(message -> message.getId().equals(messageId))
-                      .findAny();
+                .complete()
+                .stream()
+                .filter(message -> message.getId().equals(messageId))
+                .findAny();
         if (messageOption.isPresent()) {
             Message m = messageOption.get();
             if (waitingFishGames.contains(m)) {
@@ -101,8 +101,8 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                     m.delete().queue();
                 }
             } else if (!event.getUser().isBot() &&
-                       runningFishGames.contains(m) &&
-                       event.getReaction().retrieveUsers().stream().anyMatch(User::isBot)) {
+                    runningFishGames.contains(m) &&
+                    event.getReaction().retrieveUsers().stream().anyMatch(User::isBot)) {
                 ch.clearReactionsById(messageId, event.getReactionEmote().getEmoji()).queue();
 
                 UserEntity user;
@@ -118,16 +118,16 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                         int fishNum = (int) (Math.random() * 3) + 1;
                         ch.sendMessage(
                                 "+" +
-                                fishNum +
-                                " :fish: for " +
-                                memberName
+                                        fishNum +
+                                        " :fish: for " +
+                                        memberName
                         ).complete();
                         user.addFish(fishNum);
                     }
                     default -> {
                         ch.sendMessage(
                                 "-1 :fish: for " +
-                                memberName
+                                        memberName
                         ).complete();
                         user.subFish(1);
                     }
@@ -142,11 +142,11 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
     private void startFishingCompetition(Message origM) {
         origM.clearReactions().queue();
         origM.editMessage(new EmbedBuilder().setTitle("Time to go fishing!")
-                                            .setDescription("""
-                                                            Click the fish emote. **Only the fish emote!**
+                .setDescription("""
+                        Click the fish emote. **Only the fish emote!**
 
-                                                            Be careful, all non-fish reactions cost you a fish!""")
-                                            .setColor(Color.BLUE).build()
+                        Be careful, all non-fish reactions cost you a fish!""")
+                .setColor(Color.BLUE).build()
         ).queue(m -> {
             try {
                 runningFishGames.add(m);
@@ -163,8 +163,8 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                 m.clearReactions().queue();
                 m.editMessage(
                         new EmbedBuilder().setTitle("Fishing time is over!")
-                                          .setFooter("Start another fishing event with 'dp! fish'")
-                                          .build()
+                                .setFooter("Start another fishing event with 'dp! fish'")
+                                .build()
                 ).queue();
                 runningFishGames.remove(m);
             } catch (InterruptedException e) {

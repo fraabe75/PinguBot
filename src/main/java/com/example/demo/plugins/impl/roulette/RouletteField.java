@@ -40,24 +40,24 @@ interface RouletteField {
         AtomicInteger row = new AtomicInteger(0);
 
         getCurrentBets().keySet()
-                        .stream()
-                        .filter(aLong -> colorMapping.get(aLong).getColor() != null)
-                        .map(aLong -> colorMapping.get(aLong).getColor())
-                        .sorted(Comparator.comparing(Color::toString))
-                        .forEachOrdered(
-                                color -> {
-                                    if (col.get() == 3) {
-                                        col.set(0);
-                                        row.incrementAndGet();
-                                    }
-                                    g.setColor(color);
-                                    g.fillOval(
-                                            (col.getAndIncrement() * square_len) + startX,
-                                            (row.get() * square_len) + startY,
-                                            circle_rect_side_length,
-                                            circle_rect_side_length
-                                    );
-                                }
-                        );
+                .stream()
+                .filter(aLong -> colorMapping.get(aLong).getColor() != null)
+                .map(aLong -> colorMapping.get(aLong).getColor())
+                .sorted(Comparator.comparing(Color::toString))
+                .forEachOrdered(
+                        color -> {
+                            if (col.get() == 3) {
+                                col.set(0);
+                                row.incrementAndGet();
+                            }
+                            g.setColor(color);
+                            g.fillOval(
+                                    (col.getAndIncrement() * square_len) + startX,
+                                    (row.get() * square_len) + startY,
+                                    circle_rect_side_length,
+                                    circle_rect_side_length
+                            );
+                        }
+                );
     }
 }
