@@ -187,14 +187,26 @@ class RouletteBoard {
         fields.forEach(field -> field.getCurrentBets().forEach(
                 (uID, betAmount) -> userPayoutMap.merge(
                         uID,
-                        -betAmount + (isPayoutField(field, rolledNumber) ? field.calculatePayout(betAmount) : 0),
+                        (isPayoutField(field, rolledNumber) ? field.calculatePayout(betAmount) : -betAmount),
                         Long::sum
                 ))
         );
-        userPayoutMap.forEach((uID, investReturn) -> builder.addField(
-                players.get(uID).getUser().getUserName(),
-                investReturn + " :fish: (" + (investReturn > 0 ? "+" : "-") + "1 Mateability)",
-                false)
+        userPayoutMap.forEach((uID, investReturn) -> {
+                    int mateabilityBonus;
+                    if (investReturn <= 0) {
+                        mateabilityBonus = -1;
+                    } else if (investReturn < 30) {
+                        mateabilityBonus = 1;
+                    } else if (investReturn < 100) {
+                        mateabilityBonus = 2;
+                    } else {
+                        mateabilityBonus = 3;
+                    }
+                    builder.addField(
+                            players.get(uID).getUser().getUserName(),
+                            investReturn + " :fish: (" + mateabilityBonus + " Mateability)",
+                            false);
+                }
         );
         if (userPayoutMap.isEmpty()) {
             builder.setDescription("No fish was thrown on the board,\nso there won't be any payout!");

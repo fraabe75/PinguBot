@@ -10,7 +10,6 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -71,40 +70,44 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
         final TextChannel channel = event.getChannel();
 
         if (lastErrorMessageID != null) {
-            channel.deleteMessageById(lastErrorMessageID).queue();
+            channel.deleteMessageById(lastErrorMessageID).queue(m -> {}, e -> {});
             lastErrorMessageID = null;
         }
 
         switch (param.trim().split(" ")[0]) {
             case "start", "play", "new", "game", "p" -> {
                 if (board == null || board.isFinished()) {
-                    board = new RouletteBoard((b) -> {
-                        printOrUpdateBoard(b, channel, () -> {
-                            int rolledNumber = new Random().nextInt(37);
-                            channel.sendMessage(
-                                    new EmbedBuilder().setTitle("Rolled Number: " + rolledNumber)
-                                                      .setColor(Number.COLOR_TABLE[rolledNumber])
-                                                      .build()
-                            ).queue();
+                    board = new RouletteBoard((b) -> printOrUpdateBoard(b, channel, () -> {
+                        int rolledNumber = new Random().nextInt(37);
+                        channel.sendMessage(
+                                new EmbedBuilder().setTitle("Rolled Number: " + rolledNumber)
+                                                  .setColor(Number.COLOR_TABLE[rolledNumber])
+                                                  .build()
+                        ).queue();
 
-                            EmbedBuilder builder = new EmbedBuilder();
-                            builder.setTitle("Payout");
-                            b.addPayoutPerUser(builder, rolledNumber)
-                             .forEach((key, value) -> {
-                                 UserEntity author = userRepository.getOne(key);
-                                 if (value > 0) {
-                                     author.addFish(value);
+                        EmbedBuilder builder = new EmbedBuilder();
+                        builder.setTitle("Payout");
+                        b.addPayoutPerUser(builder, rolledNumber)
+                         .forEach((key, value) -> {
+                             UserEntity author = userRepository.getOne(key);
+                             if (value <= 0) {
+                                 author.subMateability(1);
+                             } else {
+                                 author.addFish(value);
+                                 if (value < 30) {
                                      author.addMateability(1);
+                                 } else if (value < 100) {
+                                     author.addMateability(2);
                                  } else {
-                                     author.subMateability(1);
+                                     author.addMateability(3);
                                  }
-                                 userRepository.save(author);
-                             });
-                            userRepository.flush();
-                            b.setFinished();
-                            channel.sendMessage(builder.build()).queue();
-                        });
-                    });
+                             }
+                             userRepository.save(author);
+                         });
+                        userRepository.flush();
+                        b.setFinished();
+                        channel.sendMessage(builder.build()).queue();
+                    }));
                 } else {
                     channel.sendMessage("There is already a game in progress.")
                            .queue(m -> lastErrorMessageID = m.getIdLong());
@@ -118,14 +121,13 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                              .replace("place", "")
                              .trim();
 
-
                 if (board == null || board.isFinished() || board.getBetTimeRemaining() <= 0) {
                     channel.sendMessage(
                             "No game in progress, start a new one with '"
                             + prefix
                             + " rlt play'"
                     ).queue(m -> lastErrorMessageID = m.getIdLong());
-                } else if (!param.matches("^[\\d\\w]+ \\d+$")) {
+                } else if (!param.matches("^[\\d\\w]+ (\\d+|all)$")) {
                     channel.sendMessage("Bot does not compute (invalid bet format)\n" +
                                         "Better try this: '" + prefix + " rlt bet <field> <amount>'")
                            .queue(m -> lastErrorMessageID = m.getIdLong());
@@ -160,12 +162,17 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                     }
                     String betField = param.trim().split(" ")[0];
                     long betAmount;
-                    try {
-                        betAmount = Long.parseUnsignedLong(param.trim().split(" ")[1]);
-                    } catch (NumberFormatException e) {
-                        channel.sendMessage("Invalid bet! (Trying to overflow our bet system, he?)")
-                               .queue(m -> lastErrorMessageID = m.getIdLong());
-                        break;
+                    if (param.trim().split(" ")[1].equals("all")) {
+                        betAmount = author.getFish();
+                    }
+                    else {
+                        try {
+                            betAmount = Long.parseUnsignedLong(param.trim().split(" ")[1]);
+                        } catch (NumberFormatException e) {
+                            channel.sendMessage("Invalid bet! (Trying to overflow our bet system, he?)")
+                                   .queue(m -> lastErrorMessageID = m.getIdLong());
+                            break;
+                        }
                     }
                     if (author.getFish() < betAmount) {
                         channel.sendMessage("We looked everywhere, "
@@ -180,9 +187,13 @@ public class Roulette extends Plugin implements GuildMessageReceivedPlugin {
                         if (!board.addBet(authorID, betAmount, betField)) {
                             EmbedBuilder builder = new EmbedBuilder();
                             builder.setTitle("Beep Boop");
-                            builder.setDescription("It seems like you entered a wrong field\n" +
-                                                   "(do you even know how to " +
-                                                   "read help pages?)\n\nAvailable fields and their payouts:\n\n");
+                            builder.setDescription("""
+                                                   It seems like you entered a wrong field
+                                                   (do you even know how to read help pages?)
+
+                                                   Available fields and their payouts:
+
+                                                   """);
                             for (MessageEmbed.Field field : RouletteBoard.getFieldHelpFields()) {
                                 builder.addField(field);
                             }
