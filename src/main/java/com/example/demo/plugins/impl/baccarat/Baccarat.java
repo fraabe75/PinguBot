@@ -37,8 +37,7 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         embedBuilder.setTitle("Baccarat help");
         embedBuilder.setDescription("""
                 Baccarat ist the perfect game
-                for when you are walking into a casino
-                and want to look like Daniel Craig,
+                for when you are walking into a casino and want to look like Daniel Craig,
                 but are already 7 Cosmopolitans deep into the evening.""");
         embedBuilder.addField("baccarat <bet> <betAmount>", "start a new Baccarat game, betting on the selected outcome\nand with the selected amount.", false);
         embedBuilder.addField("(player|bank|tie)", "possible options for the <bet>.\n" +
