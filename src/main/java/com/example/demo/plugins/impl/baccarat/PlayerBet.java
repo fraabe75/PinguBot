@@ -3,7 +3,7 @@ package com.example.demo.plugins.impl.baccarat;
 public enum PlayerBet {
 
     Player("Player", 2),
-    Bank("Bank", 0.95),
+    Bank("Bank", 1.95),
     Tie("Tie", 8);
 
 

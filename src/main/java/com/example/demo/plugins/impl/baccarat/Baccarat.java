@@ -17,11 +17,12 @@ import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
 import org.springframework.stereotype.Service;
 
+import java.nio.channels.Channel;
 import java.util.*;
 
+@Service
 public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
 
-    private PlayerBet bet;
     private final UserRepository userRepository;
 
     public Baccarat(UserRepository userRepository) {
@@ -57,12 +58,7 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         User user = event.getAuthor();
         UserEntity userEntity = UserEntity.getUserByIdLong(null, user, userRepository);
         Member member = event.getMember();
-        ArrayList<Cards> pHand = new ArrayList<>();
-        ArrayList<Cards> bHand = new ArrayList<>();
-        int pValue;
-        int bValue;
-        boolean natural;
-        PlayerBet winner;
+        PlayerBet bet;
 
         //create shuffled Stack of 6 decks
         Stack<Cards> stack = new Stack<>();
@@ -70,18 +66,26 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         Collections.shuffle(stack);
 
         try {
-            bet = switch (param.trim().split(" ")[1]) {
+            bet = switch (param.trim().split(" ")[0]) {
                 case "player","p" -> PlayerBet.Player;
                 case "bank", "b" -> PlayerBet.Bank;
                 case "tie", "t" -> PlayerBet.Tie;
+                case "rules" -> printRules(channel);
                 default -> null;
             };
             if(bet == null) {
-                channel.sendMessage("invalid bet").queue();
+                channel.sendMessage(help()).queue();
                 return true;
             }
 
-            long betAmount = Long.getLong(param.trim().split(" ")[0]);
+            ArrayList<Cards> pHand = new ArrayList<>();
+            ArrayList<Cards> bHand = new ArrayList<>();
+            int pValue;
+            int bValue;
+            boolean natural;
+            PlayerBet winner;
+
+            long betAmount = Long.parseLong(param.trim().split(" ")[1]);
 
             if (userEntity.getFish() < betAmount || betAmount < 0) {
                 channel.sendMessage("Don't bet money you don't have!").queue();
@@ -127,15 +131,16 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
             EmbedBuilder embedBuilder = new EmbedBuilder();
             embedBuilder.setTitle("Baccarat result");
             embedBuilder.setDescription(betAmount > 0 ? "You won!" : "You lost.");
-            embedBuilder.addField("Bank Cards", formatHand(bHand), false);
             embedBuilder.addField("Player Cards", formatHand(pHand), false);
+            embedBuilder.addField("Bank Cards", formatHand(bHand), false);
             embedBuilder.addField("Scores", formatScores(pValue, bValue), false);
             embedBuilder.addField("Bets", formatBets(bet, winner), false);
             channel.sendMessage(embedBuilder.build()).queue();
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             channel.sendMessage("Congratulations, you are officially too stupid to play the simplest casino game.\nMay I direct you to the exit?").queue();
-            return false;
+            return true;
         }
 
 
@@ -160,7 +165,7 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
         return "Player Score: " +
                 pScore +
                 "\n" +
-                "Bank Score:" +
+                "Bank Score: " +
                 bScore +
                 "\n";
     }
@@ -174,4 +179,16 @@ public class Baccarat extends Plugin implements GuildMessageReceivedPlugin {
                 "\n";
     }
 
+    private PlayerBet printRules(TextChannel channel) {
+        EmbedBuilder embedBuilder = new EmbedBuilder();
+        embedBuilder.setTitle("Baccarat Rules");
+        embedBuilder.addField("Rules", "https://www.onlinecasinoselite.org/getting-started/gambling-rules/baccarat", false);
+        embedBuilder.addField("Payout Rates", """
+               Player Bet = 2:1
+               Bank Bet = 1,95:1
+               Tie Bet = 8:1
+               """, false);
+        channel.sendMessage(embedBuilder.build()).queue();
+        return null;
+    }
 }
