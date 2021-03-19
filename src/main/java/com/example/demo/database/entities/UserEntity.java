@@ -27,7 +27,7 @@ public class UserEntity {
     public UserEntity(long userId, @NotNull String userName) {
         this.userId = userId;
         this.userName = userName.toLowerCase();
-        this.fish = 0;
+        this.fish = 50;
         this.mateability = 0;
         this.rank = "fairy";
     }

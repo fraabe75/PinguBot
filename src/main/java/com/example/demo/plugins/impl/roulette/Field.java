@@ -1,10 +1,7 @@
 package com.example.demo.plugins.impl.roulette;
 
-import java.awt.*;
-import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 enum Field implements RouletteField {
     BLACK(2, "black", "black tiles", 80, 630, 290, 850),

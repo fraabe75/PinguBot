@@ -1,13 +1,12 @@
 package com.example.demo.plugins.impl.usermanager;
 
+import com.example.demo.database.entities.UserEntity;
 import com.example.demo.database.repositories.UserRepository;
 import com.example.demo.plugins.GuildMessageReceivedPlugin;
-import com.example.demo.database.entities.UserEntity;
 import com.example.demo.plugins.Plugin;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
@@ -52,10 +51,15 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setTitle("Level Help");
         builder.setDescription("""
                                Eat fish to grow and level up!
-                               When you become a Humboldt penguin,
-                               your rank will be determined dynamically
-                               regarding the other penguins in the colony.
-                               Get the highest mateability to become the emperor!\s""");
+                               
+                               As soon as you grew enough to become a Humboldt (adult state)
+                               penguin, your rank will be determined dynamically,
+                               base on your place in the colony's social structure.
+                               
+                               Remember: As soon as you are an adult (humboldt penguin or higher),\s
+                               your mateability is the only thing that counts!
+                               
+                               Get the highest mateability to become the next emperor!\s""");
         //update prizes from application.properties
         builder.addField("Baby: Fairy penguin", "You need 100 fish to level up!", false);
         builder.addField("0: Galapagos penguin", "You need 200 fish to level up!", false);
@@ -180,14 +184,14 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                     positions.append("*");
                 }
                 positions.append(userList.get(i).getUserName());
+                if (i == startIndex) {
+                    positions.append("*");
+                }
                 positions.append(" - (");
                 positions.append(userList.get(i).getFish());
                 positions.append(" :fish: | ");
                 positions.append(userList.get(i).getMateability());
                 positions.append(" :penguin: )");
-                if (i == startIndex) {
-                    positions.append("*");
-                }
                 positions.append("\n");
             }
             positions.append("...");
@@ -231,7 +235,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
             return "You are already the greatest penguin of all time!";
         }
         if (user.getRank().equals("dynamic")) {
-            return "You can only reach higher levels through a higher mateability!";
+            return "You can only reach higher levels through a higher mateability! (You are already an adult)";
         }
 
         Optional<Map.Entry<String, RankClasses.Rank>> newRank = rankClasses.entrySet()
@@ -256,7 +260,9 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
                 return "Congratulations! You reached the next level!";
             }
         } else {
-            return "You don't have enough fish to grow!";
+            return "You don't have enough fish to grow! Next level requires " +
+                   newRank.get().getValue().getCost() +
+                   " :fish:!";
         }
     }
 
@@ -266,17 +272,17 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
 
         if (user.getRank().equals("dynamic")) {
             //emperor
-            UserEntity emperor = userRepository.findById(dynamicUserList.stream().findFirst().get()).orElse(null);
-            if (emperor != null && user.getUserId().equals(emperor.getUserId())) {
+            UserEntity emperor = userRepository.getOne(dynamicUserList.stream().findFirst().orElseThrow());
+            if (user.getUserId().equals(emperor.getUserId())) {
                 return rankClasses.get("emperor");
             }
             //dynamic ranks
             int place = dynamicUserList.indexOf(user.getUserId()) * 8 / dynamicUserList.size();
             return rankClasses.entrySet().stream()
                               .filter(stringRankEntry -> (stringRankEntry.getValue().getLvl() - 11) * (-1) == place)
-                              .findAny().get().getValue();
+                              .findAny().orElseThrow().getValue();
         }
-        return rankClasses.get(user.getRank());
+        return rankClasses.getOrDefault(user.getRank(), rankClasses.get("fairy"));
     }
 
     private synchronized boolean transaction(UserEntity sender, UserEntity receiver, long amount) {

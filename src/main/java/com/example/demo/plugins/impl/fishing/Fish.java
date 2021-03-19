@@ -9,7 +9,6 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.guild.react.GuildMessageReactionAddEvent;
-import net.dv8tion.jda.internal.requests.Route;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -55,7 +54,6 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
     public boolean guildMessageReceived(GuildMessageReceivedEvent event, String command, String param, String prefix) {
         TextChannel channel = event.getChannel();
 
-        MessageHistory channelHistory = channel.getHistory();
         if (runningFishGames.stream().anyMatch(m -> m.getChannel().equals(channel))) {
             channel.sendMessage("Can't start a new fishing competition while there is already one happening" +
                                 " in this channel.").queue();
@@ -97,12 +95,9 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
             Message m = messageOption.get();
             if (waitingFishGames.contains(m)) {
                 waitingFishGames.remove(m);
-                System.out.println("Event");
                 if (event.getReaction().getReactionEmote().getEmoji().equals("\uD83D\uDC1F")) {
                     startFishingCompetition(m);
-                    System.out.println("Event2");
                 } else {
-                    System.out.println("Event3");
                     m.delete().queue();
                 }
             } else if (!event.getUser().isBot() &&
@@ -137,6 +132,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                         user.subFish(1);
                     }
                 }
+                userRepository.saveAndFlush(user);
                 return true;
             }
         }
@@ -158,9 +154,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
 
                 for (int i = 0; i < 8; i++) {
                     Collections.shuffle(localEmotes);
-                    localEmotes.stream().limit(6).forEach(e -> {
-                        m.addReaction(e).queue();
-                    });
+                    localEmotes.stream().limit(6).forEach(e -> m.addReaction(e).queue());
                     Thread.sleep(5000);
 
                     m.clearReactions().queue();
@@ -172,7 +166,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                                           .setFooter("Start another fishing event with 'dp! fish'")
                                           .build()
                 ).queue();
-                runningFishGames.remove(m.getIdLong());
+                runningFishGames.remove(m);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
