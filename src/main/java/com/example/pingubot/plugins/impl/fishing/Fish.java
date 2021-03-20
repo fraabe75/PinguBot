@@ -155,7 +155,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
 
                 for (int i = 0; i < 8; i++) {
                     Collections.shuffle(localEmotes);
-                    localEmotes.stream().limit(4).forEach(e -> m.addReaction(e).queue());
+                    localEmotes.stream().limit(5).forEach(e -> m.addReaction(e).queue());
                     Thread.sleep(3000);
 
                     m.clearReactions().queue();
