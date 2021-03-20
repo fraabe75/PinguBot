@@ -16,7 +16,7 @@ public class BoardImageGenerator {
 
     public static byte[] getImageFile(RouletteBoard board) {
         try {
-            BufferedImage img = ImageIO.read(new ClassPathResource(FILE_PATH).getFile());
+            BufferedImage img = ImageIO.read(new ClassPathResource(FILE_PATH).getInputStream());
             Graphics graphics = img.getGraphics();
 
             for (RouletteField field : board.getFields()) {
