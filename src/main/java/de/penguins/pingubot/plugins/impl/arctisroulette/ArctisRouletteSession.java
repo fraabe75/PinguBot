@@ -167,6 +167,7 @@ public class ArctisRouletteSession {
             userEntity.subFish(startingBet);
             userRep.saveAndFlush(userEntity);
             players.put(userEntity, 100);
+            message.editMessage(gameMessage()).queue();
         }
         return false;
     }
