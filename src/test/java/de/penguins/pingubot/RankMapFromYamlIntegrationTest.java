@@ -19,12 +19,12 @@ public class RankMapFromYamlIntegrationTest {
 
     @Test
     public void whenYamlFileProvidedThenInjectMap() {
-        assertEquals(rankClasses.getRankClasses().size(), 10);
+        assertEquals(14, rankClasses.getRankClasses().size(), 10);
         RankClasses.Rank testRank = rankClasses.getRankClasses().get("adelie");
         assertNotNull(testRank);
-        assertEquals(testRank.getEn(), "Adelie");
-        assertEquals(testRank.getLvl(), 5);
-        assertEquals(testRank.getImg(), "src/main/resources/pingu_ranks/adelie.jpg");
+        assertEquals("Adelie penguin", testRank.getEn());
+        assertEquals(7, testRank.getLvl());
+        assertEquals("pingu_ranks/adelie.jpg", testRank.getImg());
     }
 
 }
