@@ -227,7 +227,7 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.setThumbnail("attachment://" + file.getFilename());
         try {
             channel.sendMessage(builder.build())
-                    .addFile(file.getFile(), Objects.requireNonNull(file.getFilename()))
+                    .addFile(file.getInputStream(), Objects.requireNonNull(file.getFilename()))
                     .queue();
         } catch (IOException e) {
             System.err.println("Couldn't load profile picture: " + e.getMessage());
