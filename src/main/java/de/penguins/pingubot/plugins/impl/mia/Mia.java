@@ -75,7 +75,12 @@ public class Mia extends Plugin implements GuildMessageReceivedPlugin {
                     if (totalRoll == 21) {
                         running = false;
                         result = "Mia!";
-                    } else if ((firstRoll != secondRoll && (lastThrow / 10) == (lastThrow % 10)) || totalRoll <= lastThrow) {
+                    } else if (firstRoll != secondRoll && (lastThrow / 10) == (lastThrow % 10)) {
+                        running = false;
+                        result = "This throw is not higher!";
+                    } else if (firstRoll == secondRoll && (lastThrow / 10) != (lastThrow % 10)) {
+                        result = "This throw is higher!";
+                    } else if (totalRoll <= lastThrow) {
                         running = false;
                         result = "This throw is not higher!";
                     } else {

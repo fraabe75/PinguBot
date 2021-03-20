@@ -70,7 +70,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                                     Click the fish emote. **Only the fish emote!**
 
                                     Be careful, all non-fish reactions cost you a fish!""")
-                            .setFooter("If you're ready catch some fish, react with :fish:")
+                            .setFooter("\uD83D\uDC1F : start, \uD83D\uDEB1 : abort")
                             .setColor(Color.BLUE).build()
             ).queue(m -> {
                 waitingFishGames.add(m);

@@ -3,6 +3,7 @@ package de.penguins.pingubot.core;
 import de.penguins.pingubot.plugins.GuildMessageReactionAddPlugin;
 import de.penguins.pingubot.plugins.GuildMessageReceivedPlugin;
 import de.penguins.pingubot.plugins.Plugin;
+import de.penguins.pingubot.plugins.impl.arctisroulette.ArctisRouletteSession;
 import de.penguins.pingubot.plugins.impl.baccarat.Baccarat;
 import de.penguins.pingubot.plugins.impl.usermanager.UserManager;
 import de.penguins.pingubot.plugins.impl.blackjack.Blackjack;
@@ -80,6 +81,7 @@ public class MainListener extends ListenerAdapter {
                         case "roulette", "rlt", "r" -> Roulette.help();
                         case "blackjack", "bj", "b" -> Blackjack.help();
                         case "baccarat", "bac", "bc" -> Baccarat.help();
+                        case "arctis", "arctic", "arc" -> ArctisRouletteSession.help();
                         case "mia", "m" -> Mia.help();
                         case "fish", "f" -> Fish.help();
                         default -> {

@@ -205,8 +205,8 @@ public class Blackjack extends Plugin implements GuildMessageReceivedPlugin, Gui
                 getCards(dealerCards, true);
                 dealerScore = calculateScore(false);
             }
-            builder.addField("Cards of dealer:", getCards(dealerCards, false), false);
-            builder.addField("Your cards:", getCards(playerCards, false), false);
+            builder.addField("Bank cards:", getCards(dealerCards, false), false);
+            builder.addField("Player cards:", getCards(playerCards, false), false);
             builder.addField("Scores", "Dealer score: " + dealerScore + "\nPlayer score: " + userScore, false);
             builder.setFooter("\u261D" + ": hit, " + "\u270B" + ": stand");
             if (dealerScore > 21 || dealerScore < userScore) {
