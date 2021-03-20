@@ -9,6 +9,7 @@ import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -21,8 +22,7 @@ import java.util.stream.Collectors;
 public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
     private final UserRepository userRepository;
     private final Map<String, RankClasses.Rank> rankClasses;
-    @Value("${prefix}")
-    private static String prefix;
+    private static String PREFIX;
 
     public UserManager(UserRepository userRepository, RankClasses rankClasses) {
         setName("User");
@@ -80,8 +80,13 @@ public class UserManager extends Plugin implements GuildMessageReceivedPlugin {
         builder.addField("11: King penguin", "only a few steps away from the throne", false);
         builder.addField("12: Emperor penguin", "the one and only champion", false);
         builder.setImage("https://i.redd.it/eyymtmpph1u01.jpg");
-        builder.setFooter("Find the global rank with: '" + prefix + " global'");
+        builder.setFooter("Find the global rank with: '" + PREFIX + " global'");
         return builder.build();
+    }
+
+    @Value("${prefix}")
+    private void setPrefix(String prefix) {
+        PREFIX = prefix;
     }
 
     @Override
