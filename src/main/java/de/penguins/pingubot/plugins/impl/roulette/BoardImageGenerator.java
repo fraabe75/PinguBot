@@ -6,17 +6,18 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
 public class BoardImageGenerator {
-    private static final String FILE_PATH = "roulette/roulette_board_small.png";
+    private static final String FILE_PATH = "src/main/resources/roulette/roulette_board_small.png";
     private static final double FILE_SCALE = 0.5;
     private static final int FIELD_OFFSET = (int) (10 * FILE_SCALE);
 
     public static byte[] getImageFile(RouletteBoard board) {
         try {
-            BufferedImage img = ImageIO.read(new ClassPathResource(FILE_PATH).getInputStream());
+            BufferedImage img = ImageIO.read(new File(FILE_PATH));
             Graphics graphics = img.getGraphics();
 
             for (RouletteField field : board.getFields()) {
@@ -26,7 +27,6 @@ public class BoardImageGenerator {
 
             ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
             ImageIO.write(img, "png", byteStream);
-
             return byteStream.toByteArray();
         } catch (IOException e) {
             System.err.println(e.toString());
