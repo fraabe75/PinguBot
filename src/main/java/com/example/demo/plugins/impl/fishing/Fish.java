@@ -31,6 +31,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
             "U+1F433", // whale 2
             "U+1F4A7", // droplet
             "U+1F30A", // ocean
+            "U+1F421", // blowfish
     };
 
     public Fish(UserRepository userRepository) {
@@ -114,7 +115,7 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
                 String memberName = user.getUserName();
 
                 switch (event.getReactionEmote().getName()) {
-                    case "\uD83D\uDC1F", "\uD83D\uDC20" -> {
+                    case "\uD83D\uDC1F", "\uD83D\uDC20", "\uD83D\uDC21" -> {
                         int fishNum = (int) (Math.random() * 3) + 1;
                         ch.sendMessage(
                                 "+" +
@@ -154,8 +155,8 @@ public class Fish extends Plugin implements GuildMessageReceivedPlugin, GuildMes
 
                 for (int i = 0; i < 8; i++) {
                     Collections.shuffle(localEmotes);
-                    localEmotes.stream().limit(6).forEach(e -> m.addReaction(e).queue());
-                    Thread.sleep(5000);
+                    localEmotes.stream().limit(4).forEach(e -> m.addReaction(e).queue());
+                    Thread.sleep(3000);
 
                     m.clearReactions().queue();
                     Thread.sleep(500);

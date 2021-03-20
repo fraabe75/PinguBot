@@ -9,6 +9,10 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+
 @Service
 public class Mia extends Plugin implements GuildMessageReceivedPlugin {
 
@@ -38,7 +42,6 @@ public class Mia extends Plugin implements GuildMessageReceivedPlugin {
 
         switch (param.trim().split(" ")[0]) {
             case "start", "play", "new", "game", "p" -> {
-
                 long bet;
                 UserEntity player = UserEntity.getUserByIdLong(event.getMember(), event.getAuthor(), userRepository);
 
