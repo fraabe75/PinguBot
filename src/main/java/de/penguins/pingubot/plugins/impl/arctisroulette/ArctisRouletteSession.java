@@ -68,7 +68,7 @@ public class ArctisRouletteSession {
         this.message = channel.sendMessage(gameMessage()).complete();
         this.message.addReaction("\uD83D\uDCB8").queue();
         this.message.addReaction("\u25B6\uFE0F").queue();
-        this.message.addReaction("\u274C").queue();
+        this.message.addReaction("\u23F9\uFE0F").queue();
     }
 
     private MessageEmbed gameMessage() {
@@ -80,7 +80,7 @@ public class ArctisRouletteSession {
                     "Be careful, this costs you " + startingBet + " :fish:!",
                     false);
             builder.addField(
-                    ":arrow_forward: | :x: : Start / Stop the game",
+                    ":arrow_forward: | :stop_button: : Start | Stop the game",
                     "Only the player who initialized " +
                     "this session may use this.",
                     false);
@@ -200,7 +200,7 @@ public class ArctisRouletteSession {
             return switch (e.getReactionEmote().getEmoji()) {
                 case "\u25B6\uFE0F" -> startGame(e.getUser());
                 case "\uD83D\uDCB8" -> joinPlayer(e.getMember(), e.getUser());
-                case "\u274C" -> deleteGame(e.getUser());
+                case "\u23F9\uFE0F" -> deleteGame(e.getUser());
                 default -> false;
             };
         }
