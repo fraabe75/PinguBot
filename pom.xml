@@ -10,7 +10,7 @@
     </parent>
 
     <!-- mvn clean compile package -->
-    <groupId>com.example</groupId>
+    <groupId>de.penguins</groupId>
     <artifactId>pingubot-springboot</artifactId>
     <version>0.1.0</version>
     <name>pingubot-springboot</name>
@@ -90,7 +90,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <fork>true</fork>
-                    <mainClass>com.example.pingubot.PinguBotApplication</mainClass>
+                    <mainClass>de.penguins.pingubot.PinguBotApplication</mainClass>
                 </configuration>
                 <executions>
                     <execution>
@@ -109,7 +109,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>com.example.pingubot.PinguBotApplication</mainClass>
+                            <mainClass>de.penguins.pingubot.PinguBotApplication</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
